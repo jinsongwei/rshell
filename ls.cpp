@@ -38,6 +38,8 @@ void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib);
 
 //print nicely
 void print(char ** temp);
+
+
 int main()
 {
           help();
@@ -154,11 +156,11 @@ void inDirectory(char ** files, char ** visibleFiles)
 	visibleFiles[j] = NULL;
 
 	closedir(dirp);
-
 }
 
 void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib)
 {
+	cout << strlen(argvcmd[1]) << endl;
 	if(strcmp(argvcmd[0],"ls") != 0)
 	{
 		cerr << "*** "<<argvcmd[0] << " is not command" << endl;
@@ -166,10 +168,11 @@ void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib)
 	}
 	else{
 		if(argvcmd[1] == NULL)
-		{	
 			print(argvvib);
-		}
+		else if(strcmp(argvcmd[1],"-l") == 0)
+			print(argvfiles);
 	}
+	//print(argvfiles);
 }
 
 void print(char ** temp)
