@@ -1,3 +1,5 @@
+#include <time.h>
+#include <sys/stat.h>
 #include <iomanip>
 #include <iostream>
 #include <string.h>
@@ -9,7 +11,10 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <pwd.h>
+#include <grp.h>
 
+#define MODE(z) ((statbuf.st_mode & (z)) == (z))
 using namespace std;
 
 //.........................................
@@ -19,7 +24,7 @@ void testArgv(char * test[]);
 //........................................
 
 
-void help();
+void help(int argc, char ** argv);
 
 //user input a whole string, terminate untill enter
 char * inputCommand();
@@ -39,28 +44,34 @@ void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib);
 //print nicely
 void print(char ** temp);
 
+//print out for -l flag
+void printInfo(char **temp);
 
-int main()
+// help printInfo 	
+void printInfoHelp(char * file);
+
+int main(int argc, char ** argv)
 {
-          help();
+          help(argc, argv);
           return 0;
 }
  
-void help()
+void help(int argc, char ** argv)
 {
-	char * cmdString;
-        char * argvNew[10];
-	cmdString = inputCommand();
-        cmdString = orgSpaces(cmdString);
-        parsingArgv(cmdString, argvNew);
+//	char * cmdString;
+//       char * argvNew[10];
+//	cmdString = inputCommand();
+//        cmdString = orgSpaces(cmdString);
+//        parsingArgv(cmdString, argvNew);
 
  	char * files[200];
 	char * visibleFiles[100];
  	inDirectory(files, visibleFiles);
 //passing argument argvNew
-	outputCmd(argvNew, files, visibleFiles);
+	outputCmd(argv, files, visibleFiles);
 }
 
+/*
 char * inputCommand()
 {
 	char *temp = new char[50];
@@ -121,15 +132,17 @@ void parsingArgv(char * temp, char * argvTemp[])
 	argvTemp[index] = NULL;
 	argvTemp[index + 1] = NULL;
 }
+*/
 
 void inDirectory(char ** files, char ** visibleFiles)
 {
-	char *dirName = ".";
+	char c[2] = ".";
+	char *dirName = c;
 	DIR *dirp = opendir(dirName);
 	if (dirp == NULL)
 	{
 		perror("opendir");
-		exit(0);
+		exit(1);
 	}
 	dirent *direntp;
 	int index = 0;
@@ -140,7 +153,7 @@ void inDirectory(char ** files, char ** visibleFiles)
 		index++;
 	}
 	files[index] = NULL;
-//store all visible files without '.' in the front to the visibleFiles array    .
+//store all visible files without '.' in the front to the visibleFiles array
 	int i = 0;
 	int j = 0;
 	char * temp;
@@ -160,19 +173,20 @@ void inDirectory(char ** files, char ** visibleFiles)
 
 void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib)
 {
-	cout << strlen(argvcmd[1]) << endl;
-	if(strcmp(argvcmd[0],"ls") != 0)
+	if(strcmp(argvcmd[1],"ls") != 0)
 	{
 		cerr << "*** "<<argvcmd[0] << " is not command" << endl;
 		exit(1);
 	}
 	else{
-		if(argvcmd[1] == NULL)
+		if(argvcmd[2] == NULL)
 			print(argvvib);
-		else if(strcmp(argvcmd[1],"-l") == 0)
+		else if(strcmp(argvcmd[2],"-a") == 0)
 			print(argvfiles);
+		else if(strcmp(argvcmd[2],"-l") == 0)
+			printInfo(argvvib);
 	}
-	//print(argvfiles);
+	
 }
 
 void print(char ** temp)
@@ -180,11 +194,103 @@ void print(char ** temp)
 	int i = 0;
 	while(temp[i] != NULL)
 	{
-		cout << left << setw(20) << temp[i];
+		cout << left << setw(10) << temp[i];
 		i++;
 	}
 	cout << endl;
 }
+
+
+void printInfo(char **temp)
+{
+	int i = 0;
+	while(temp[i] != NULL)
+	{
+		printInfoHelp(temp[i]);
+		i++;
+	}
+}
+
+void printInfoHelp(char *file)
+{
+	struct stat statbuf;
+	if(stat(file, &statbuf) == -1)
+	{
+		perror("");
+		exit(1);
+	}
+
+	if(S_ISDIR(statbuf.st_mode))
+		cout << "d";
+	else
+		cout << "-";
+	if(MODE(S_IRUSR))
+		cout << "r";
+	else
+		cout << "-";
+	if(MODE(S_IWUSR))
+		cout << "w";
+	else
+		cout << "-";
+	if(MODE(S_IXUSR))
+		cout << "x";
+	else
+		cout << "-";
+	if(MODE(S_IRGRP))
+		cout << "r";
+	else
+		cout << "-";
+	if(MODE(S_IWGRP))
+		cout << "w";
+	else
+		cout << "-";
+	if(MODE(S_IXGRP))
+		cout << "x";
+	else
+		cout << "-";
+	if(MODE(S_IROTH))
+		cout << "r";
+	else
+		cout << "-";
+	if(MODE(S_IWOTH))
+		cout << "w";
+	else
+		cout << "-";
+	if(MODE(S_IXOTH))
+		cout << "x";
+	else
+		cout << "-";
+	cout << " ";
+//.............
+// I don't know what should I insert? what the number means
+//............
+
+//user name
+	char *username = getlogin();
+	cout << username << " ";
+	
+	struct group *myGroup;
+	myGroup = getgrgid(statbuf.st_gid);
+	if(myGroup != NULL)
+		cout << (myGroup->gr_name) << " ";
+	else
+		cout << "unknow"<< " ";
+	cout << statbuf.st_size << " ";
+	char *time = ctime(&(statbuf.st_ctime));
+	int i = 0;
+	while(time[i] != '\n')
+	{
+		cout << time[i];
+		i++;
+	}
+	cout << " ";
+
+	cout << file << endl;
+}
+
+
+
+
 
 //......................................................
 //this is testing funciton nothing contribute to main program
