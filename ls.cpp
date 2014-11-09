@@ -15,6 +15,13 @@
 #include <grp.h>
 
 #define MODE(z) ((statbuf.st_mode & (z)) == (z))
+#define FLAG_a 1
+#define FLAG_l 2
+#define FLAG_R 4
+
+static bool is_l = false;
+static bool is_a = false;
+static char *path; 
 using namespace std;
 
 //.........................................
@@ -36,7 +43,7 @@ char * orgSpaces(char * cmd);
 void parsingArgv(char * temp, char ** argvTemp);
 
 //open dir and store files
-void inDirectory(char ** files, char ** visibleFiles);
+void inDirectory(char ** files, char ** visibleFiles, char *dirName);
 
 //passing argvNew and manipulate commands in it.
 void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib);
@@ -50,6 +57,19 @@ void printInfo(char **temp);
 // help printInfo 	
 void printInfoHelp(char * file);
 
+// print all files include inside of directories
+void printAllDir(char **temp);
+
+// print all subdirectories.
+void printAllDirHelp(char *afile);
+
+
+// clean memory
+void freeArray(char ** array);
+
+
+
+
 int main(int argc, char ** argv)
 {
           help(argc, argv);
@@ -58,17 +78,57 @@ int main(int argc, char ** argv)
  
 void help(int argc, char ** argv)
 {
-//	char * cmdString;
-//       char * argvNew[10];
-//	cmdString = inputCommand();
-//        cmdString = orgSpaces(cmdString);
-//        parsingArgv(cmdString, argvNew);
-
  	char * files[200];
 	char * visibleFiles[100];
- 	inDirectory(files, visibleFiles);
-//passing argument argvNew
-	outputCmd(argv, files, visibleFiles);
+	path = get_current_dir_name();
+	char c[2] = ".";
+ 	inDirectory(files, visibleFiles,c); 
+	int flag = 0;
+	for(int i = 1; i < argc; i++)
+	{
+		if(argv[i][0] == '-')
+		{
+			for(int j = 1; argv[i][j] != 0;j++)
+			{
+				if(argv[i][j] == 'a')
+					flag |= FLAG_a;
+				else if(argv[i][j] == 'l')
+					flag |= FLAG_l;
+				else if(argv[i][j] == 'R')
+					flag |= FLAG_R;
+			}
+		}
+	}
+	
+	switch (flag){
+		case 0: print(visibleFiles);  break;
+			
+		case 1: print(files); break;
+			
+		case 2: printInfo(visibleFiles); break;
+
+		case 3: printInfo(files); break;
+		
+		case 4: printAllDir(visibleFiles); break;
+
+		case 5: printAllDir(files); break;
+			
+		case 6: is_l = true;
+			printAllDir(visibleFiles);	
+			break;
+		case 7: is_a = true; 
+			is_l = true;
+			printAllDir(files);
+			break;
+		default:
+			cerr << "wrong option" << endl;
+			exit(1);
+			break;	
+			
+		
+	}
+	//freeArray(files);
+	//freeArray(visibleFiles);
 }
 
 /*
@@ -134,10 +194,8 @@ void parsingArgv(char * temp, char * argvTemp[])
 }
 */
 
-void inDirectory(char ** files, char ** visibleFiles)
+void inDirectory(char ** files, char ** visibleFiles, char * dirName)
 {
-	char c[2] = ".";
-	char *dirName = c;
 	DIR *dirp = opendir(dirName);
 	if (dirp == NULL)
 	{
@@ -148,7 +206,7 @@ void inDirectory(char ** files, char ** visibleFiles)
 	int index = 0;
 	while((direntp = readdir(dirp))){
 		char * temp = direntp->d_name;
-		files[index] = new char[strlen(direntp->d_name)+1];
+		files[index] = new char[strlen(direntp->d_name)];
 		strcpy(files[index],temp);
 		index++;
 	}
@@ -160,7 +218,7 @@ void inDirectory(char ** files, char ** visibleFiles)
 	while(files[i] != NULL){
 		temp = files[i];
 		if(temp[0] != '.'){
-			visibleFiles[j] = new char[strlen(files[i])+1];
+			visibleFiles[j] = new char[strlen(files[i])];
 			strcpy(visibleFiles[j],temp);
 			j++;
 		}
@@ -169,6 +227,7 @@ void inDirectory(char ** files, char ** visibleFiles)
 	visibleFiles[j] = NULL;
 
 	closedir(dirp);
+	
 }
 
 void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib)
@@ -179,14 +238,15 @@ void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib)
 		exit(1);
 	}
 	else{
-		if(argvcmd[2] == NULL)
+		if(argvcmd[2] == NULL )
 			print(argvvib);
-		else if(strcmp(argvcmd[2],"-a") == 0)
+		else if(strcmp(argvcmd[2],"-a") == 0 && argvcmd[3] == NULL) 
 			print(argvfiles);
-		else if(strcmp(argvcmd[2],"-l") == 0)
+		else if(strcmp(argvcmd[2],"-l") == 0 && argvcmd[3] == NULL)
 			printInfo(argvvib);
+		else if(strcmp(argvcmd[2],"-R") == 0 && argvcmd[3] == NULL)
+			printAllDir(argvvib);
 	}
-	
 }
 
 void print(char ** temp)
@@ -216,7 +276,7 @@ void printInfoHelp(char *file)
 	struct stat statbuf;
 	if(stat(file, &statbuf) == -1)
 	{
-		perror("");
+		perror("stat");
 		exit(1);
 	}
 
@@ -261,9 +321,9 @@ void printInfoHelp(char *file)
 	else
 		cout << "-";
 	cout << " ";
-//.............
-// I don't know what should I insert? what the number means
-//............
+	
+// number of hard links
+	cout << right << setw(2) << statbuf.st_nlink << " ";
 
 //user name
 	char *username = getlogin();
@@ -275,8 +335,10 @@ void printInfoHelp(char *file)
 		cout << (myGroup->gr_name) << " ";
 	else
 		cout << "unknow"<< " ";
-	cout << statbuf.st_size << " ";
+	cout << right << setw(6) << statbuf.st_size << " ";
 	char *time = ctime(&(statbuf.st_ctime));
+//the time[strlen[time] -1] contain four elements "\n,@,$,\0"
+//so using while 
 	int i = 0;
 	while(time[i] != '\n')
 	{
@@ -285,12 +347,107 @@ void printInfoHelp(char *file)
 	}
 	cout << " ";
 
-	cout << file << endl;
+	cout << left << setw(10) << file << endl;
+
 }
 
+void printAllDir(char **temp)
+{
+	if(is_l)
+		printInfo(temp);
+	else
+		print(temp);
+	cout << endl;
+	int i = 0;
+	while(temp[i] != NULL)
+	{
+		if(strcmp(temp[i],".") != 0 && strcmp(temp[i],"..") != 0)
+			printAllDirHelp(temp[i]);
+		i++;
+	}
+}
 
+void printAllDirHelp(char *afile)
+{
+	struct stat buf;
+	if(stat(afile, &buf) == -1)
+	{
+		perror("stat");
+		exit(1);
+	}
+	else{
+		if(S_ISDIR(buf.st_mode))
+		{
+		//change the working path to the dirctory
+			char *currentDir = get_current_dir_name();
+			int index = strlen(path);
+			int temp = strlen(currentDir) - strlen(path);
+			cout << path << endl;
+			cout << index << endl;
+			cout << strlen(currentDir) << endl;
+			cout << currentDir[index] << endl;
+			char curPath[ temp + 1];
+			if(temp == 0){
+				strncat(curPath,"\0",1);
+				cout << afile << ": " << endl;
+			}
+			else
+			{	
+				memcpy(curPath, &currentDir[index+1], temp);
+				strncat(curPath, "\0", 1);
+				cout << "/" << curPath << "/"<<afile << ": " << endl;
+				
+			}  
+			
+			
+			
+			char *fAll[200];
+			char *fvisib[100];
+			inDirectory(fAll,fvisib,afile);
+		
+			if(chdir(afile) == -1)
+			{
+				perror(" ");
+				exit(1);
+			}
+			if(is_l == true && is_a == true)
+			{
+				printInfo(fAll);
+				printAllDir(fAll);	
+			}
+			else if(is_l == true)
+			{
+				printInfo(fvisib);
+				printAllDir(fvisib);
+			}
+			else if(is_a == true)
+			{
+				printAllDir(fAll);
+			}
+			else
+				printAllDir(fvisib);
+		//change back to the previous working path
+			if(chdir(currentDir) == -1)
+			{
+				perror(" ");
+				exit(1);
+			}	
+			freeArray(fAll);
+			freeArray(fvisib);
+		}
+	}
+}
 
-
+void freeArray(char ** array)
+{
+	int i = 0;
+	while(array[i] != NULL)
+	{
+		delete [] array[i];
+		array[i] = NULL;
+		i++;
+	}
+}
 
 //......................................................
 //this is testing funciton nothing contribute to main program
