@@ -382,11 +382,7 @@ void printAllDirHelp(char *afile)
 			char *currentDir = get_current_dir_name();
 			int index = strlen(path);
 			int temp = strlen(currentDir) - strlen(path);
-			cout << path << endl;
-			cout << index << endl;
-			cout << strlen(currentDir) << endl;
-			cout << currentDir[index] << endl;
-			char curPath[ temp + 1];
+			char curPath[temp + 1];
 			if(temp == 0){
 				strncat(curPath,"\0",1);
 				cout << afile << ": " << endl;
@@ -396,7 +392,6 @@ void printAllDirHelp(char *afile)
 				memcpy(curPath, &currentDir[index+1], temp);
 				strncat(curPath, "\0", 1);
 				cout << "/" << curPath << "/"<<afile << ": " << endl;
-				
 			}  
 			
 			
@@ -410,22 +405,10 @@ void printAllDirHelp(char *afile)
 				perror(" ");
 				exit(1);
 			}
-			if(is_l == true && is_a == true)
-			{
-				printInfo(fAll);
-				printAllDir(fAll);	
-			}
-			else if(is_l == true)
-			{
-				printInfo(fvisib);
+			if(is_a)
 				printAllDir(fvisib);
-			}
-			else if(is_a == true)
-			{
-				printAllDir(fAll);
-			}
 			else
-				printAllDir(fvisib);
+				printAllDir(fAll);
 		//change back to the previous working path
 			if(chdir(currentDir) == -1)
 			{
