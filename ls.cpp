@@ -33,20 +33,8 @@ void testArgv(char * test[]);
 
 void help(int argc, char ** argv);
 
-//user input a whole string, terminate untill enter
-char * inputCommand();
-
-//organize spaces that only have one space between two argument.
-char * orgSpaces(char * cmd);
-
-//pass commands in temp to argvNew spearate by space.
-void parsingArgv(char * temp, char ** argvTemp);
-
 //open dir and store files
 void inDirectory(char ** files, char ** visibleFiles, char *dirName);
-
-//passing argvNew and manipulate commands in it.
-void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib);
 
 //print nicely
 void print(char ** temp);
@@ -62,7 +50,6 @@ void printAllDir(char **temp);
 
 // print all subdirectories.
 void printAllDirHelp(char *afile);
-
 
 // clean memory
 void freeArray(char ** array);
@@ -80,26 +67,53 @@ void help(int argc, char ** argv)
 {
  	char * files[200];
 	char * visibleFiles[100];
-	path = get_current_dir_name();
 	char c[2] = ".";
- 	inDirectory(files, visibleFiles,c); 
 	int flag = 0;
-	for(int i = 1; i < argc; i++)
+	bool anotherPath= false;
+	if(strcmp(argv[1],"ls") == 0)
 	{
-		if(argv[i][0] == '-')
+		for(int i = 2; i < argc; i++)
 		{
-			for(int j = 1; argv[i][j] != 0;j++)
+			if(argv[i][0] == '-')
 			{
-				if(argv[i][j] == 'a')
-					flag |= FLAG_a;
-				else if(argv[i][j] == 'l')
-					flag |= FLAG_l;
-				else if(argv[i][j] == 'R')
-					flag |= FLAG_R;
+				for(int j = 1; argv[i][j] != 0;j++)
+				{
+					if(argv[i][j] == 'a')
+						flag |= FLAG_a;
+					else if(argv[i][j] == 'l')
+						flag |= FLAG_l;
+					else if(argv[i][j] == 'R')
+						flag |= FLAG_R;
+				}
+			}
+		//if the argument is a path. 
+			else if(argv[i][0] == '/' && !anotherPath)
+			{
+				inDirectory(files, visibleFiles, argv[i]);
+				if(chdir(argv[i]) == -1)
+				{
+					perror("chdir");
+					exit(1);
+				}
+				anotherPath = true;
+				path = argv[i];
+			}
+			else{
+				cerr << "no such argument "<< endl;
+				exit(1);
 			}
 		}
+		if(!anotherPath){
+			inDirectory(files, visibleFiles, c);
+			path = get_current_dir_name();
+		}
 	}
-	
+	else
+	{
+		cerr << argv[1] <<": no such command in this shell " << endl;
+		exit(1);
+	}
+	cout << flag << endl;
 	switch (flag){
 		case 0: print(visibleFiles);  break;
 			
@@ -127,72 +141,9 @@ void help(int argc, char ** argv)
 			
 		
 	}
-	//freeArray(files);
-	//freeArray(visibleFiles);
+	freeArray(files);
+	freeArray(visibleFiles);
 }
-
-/*
-char * inputCommand()
-{
-	char *temp = new char[50];
-	char c;
-	cout << "[rShell_ls] $";
-	while(c != EOF)
-	{
-		c = getchar();
-		if(c == '\n')
-		{
-	        	if(temp[0] == '\0')
- 				cout << "[rShell_ls] $";
-			else
-			{
-                                strncat(temp, "\0", 1);
-				break;
-	                }
-		}
-		else
-		strncat(temp, &c, 1);
-	}
-		return temp;
-}
-
-char * orgSpaces(char * temp)
-{
-	char * cmd = new char[50];
-	int i = 0;
-	while(temp[i] != '\0'){
-		if(temp[i] == ' '){
-			while(temp[i+1] == ' '){
-				if(temp[i+1] == '\0')
-					break;
-				else
-					i++;
-			}
-		}
-		strncat(cmd, &temp[i],1);
-		i++;
-	}
-	free(temp);
-	return cmd;
-}
-
-void parsingArgv(char * temp, char * argvTemp[])
-{
-	int index = 0;
-	char *tok;
-	tok = strtok(temp, " ");
-	while(tok != NULL)
-	{
-		argvTemp[index] = new char[strlen(tok) + 2];
-		strncpy(argvTemp[index], tok, strlen(tok));
-		strncat(argvTemp[index], "\0", 1);
-		index++;
-		tok = strtok(NULL, " ");
-	}
-	argvTemp[index] = NULL;
-	argvTemp[index + 1] = NULL;
-}
-*/
 
 void inDirectory(char ** files, char ** visibleFiles, char * dirName)
 {
@@ -225,36 +176,28 @@ void inDirectory(char ** files, char ** visibleFiles, char * dirName)
 		i++;
 	}
 	visibleFiles[j] = NULL;
-
 	closedir(dirp);
 	
 }
 
-void outputCmd(char ** argvcmd, char ** argvfiles, char ** argvvib)
-{
-	if(strcmp(argvcmd[1],"ls") != 0)
-	{
-		cerr << "*** "<<argvcmd[0] << " is not command" << endl;
-		exit(1);
-	}
-	else{
-		if(argvcmd[2] == NULL )
-			print(argvvib);
-		else if(strcmp(argvcmd[2],"-a") == 0 && argvcmd[3] == NULL) 
-			print(argvfiles);
-		else if(strcmp(argvcmd[2],"-l") == 0 && argvcmd[3] == NULL)
-			printInfo(argvvib);
-		else if(strcmp(argvcmd[2],"-R") == 0 && argvcmd[3] == NULL)
-			printAllDir(argvvib);
-	}
-}
-
 void print(char ** temp)
 {
+	/*
+	int i = 1;
+	int maxLen = strlen(temp[0]);
+	while(temp[i] != NULL)
+	{
+		if(maxLen < strlen(temp[i]))
+			maxLen += strlen(temp[i]);
+		i++;
+	}
+	*/
 	int i = 0;
 	while(temp[i] != NULL)
 	{
-		cout << left << setw(10) << temp[i];
+		cout << left << setw(15) << temp[i];
+		if(i % 5 == 4)
+		cout << endl;
 		i++;
 	}
 	cout << endl;
@@ -406,9 +349,9 @@ void printAllDirHelp(char *afile)
 				exit(1);
 			}
 			if(is_a)
-				printAllDir(fvisib);
-			else
 				printAllDir(fAll);
+			else
+				printAllDir(fvisib);
 		//change back to the previous working path
 			if(chdir(currentDir) == -1)
 			{
