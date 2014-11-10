@@ -57,7 +57,11 @@ void freeArray(char ** array);
 
 
 
-int main(int argc, char ** argv)
+//print nicely
+void print(char ** temp);
+
+
+int main(int argc, char **argv)
 {
           help(argc, argv);
           return 0;
@@ -177,7 +181,6 @@ void inDirectory(char ** files, char ** visibleFiles, char * dirName)
 	}
 	visibleFiles[j] = NULL;
 	closedir(dirp);
-	
 }
 
 void print(char ** temp)
