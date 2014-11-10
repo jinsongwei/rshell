@@ -117,7 +117,6 @@ void help(int argc, char ** argv)
 		cerr << argv[1] <<": no such command in this shell " << endl;
 		exit(1);
 	}
-	cout << flag << endl;
 	switch (flag){
 		case 0: print(visibleFiles);  break;
 			
