@@ -55,7 +55,7 @@ int main()
  
 void help()
 {
-//	while(1){
+	while(1){
 		char * cmdString;
 	        char * argvNew[50];
 		cmdString = inputCommand();
@@ -64,7 +64,7 @@ void help()
         	parsingArgv(cmdString, argvNew);
 		executeCmd(argvNew);
 		
-//	}
+	}
 }
 
 char * inputCommand()
@@ -211,8 +211,8 @@ void executeCmd(char **argv)
 }
 int execvpCall(char ** argv)
 {
-//	if(strcmp(argv[0], "exit") == 0)
-//		exit(0);
+	if(strcmp(argv[0], "exit") == 0)
+		exit(0);
 	int wait_pid = 0;
 	int pid = fork();
 	if(pid == 0){
