@@ -12,6 +12,7 @@
 
 using namespace std;
 
+static bool stop = false;
 //.........................................
 //these two function is for testing
 void testString(char * test);
@@ -32,6 +33,20 @@ char * orgSpaces(char * cmd);
 //pass commands in temp to argvNew spearate by space.
 void parsingArgv(char * temp, char ** argvTemp);
 
+//execute commands
+void executeCmd(char ** argv);
+
+//fork a new process call execvp
+int execvpCall(char ** argv);
+
+//check if contain symbols
+bool isSymbol(char **argv);
+
+//clean memory
+void freeArgv(char ** temp);
+
+
+
 int main()
 {
           help();
@@ -40,14 +55,16 @@ int main()
  
 void help()
 {
-	char * cmdString;
-        char * argvNew[50];
-	cmdString = inputCommand();
-	cmdString = orgSymbol(cmdString);
-        cmdString = orgSpaces(cmdString);
-        parsingArgv(cmdString, argvNew);
-			
-	testArgv(argvNew);
+//	while(1){
+		char * cmdString;
+	        char * argvNew[50];
+		cmdString = inputCommand();
+		cmdString = orgSymbol(cmdString);
+		cmdString = orgSpaces(cmdString);
+        	parsingArgv(cmdString, argvNew);
+		executeCmd(argvNew);
+		
+//	}
 }
 
 char * inputCommand()
@@ -81,7 +98,9 @@ char * orgSymbol(char *temp)
 	while(temp[i] != '\0')
 	{
 		if(temp[i] == ';')
+		{
 			strncat(newString, " ; ", 3);
+		}
 		else if(temp[i] == '&' && temp[i+1] == '&')
 		{
 			strncat(newString," && ", 4);
@@ -97,7 +116,6 @@ char * orgSymbol(char *temp)
 		i++;
 	}
 	strncat(newString,"\0",1);
-	
 	return newString;
 }
 char * orgSpaces(char * temp)
@@ -137,7 +155,115 @@ void parsingArgv(char * temp, char * argvTemp[])
 	}
 	argvTemp[index] = NULL;
 	argvTemp[index + 1] = NULL;
+	delete [] temp;
+	temp = NULL;
 }
+
+void executeCmd(char **argv)
+{
+	if(isSymbol(argv))
+	{	
+		int i = 0;
+		int j = 0;
+		int wait_pid;
+		char *subArgv[20];
+		while(argv[i] != NULL)
+		{
+			if(strcmp(argv[i],";") == 0 || 
+				strcmp(argv[i],"&&") == 0 ||
+					strcmp(argv[i],"||") == 0)
+			{
+				subArgv[j] = NULL; 
+				wait_pid = execvpCall(subArgv);	
+				freeArgv(subArgv);
+				if((strcmp(argv[i],";") == 0 ||
+					strcmp(argv[i], "&&") == 0) && wait_pid < 0)
+					break;
+			//store left of commands
+				int tempIndex = i + 1;
+				char *leftArgv[50];
+				int index = 0;
+				while(argv[tempIndex] != NULL)
+				{
+					leftArgv[index] = new char[strlen(argv[tempIndex])+ 1];
+					strcpy(leftArgv[index], argv[tempIndex]);
+					strncat(leftArgv[index],"\0", 1);
+					index++;
+					tempIndex++;
+				}	
+				leftArgv[index] = NULL;	
+				executeCmd(leftArgv);
+				if(stop)
+					break;
+				freeArgv(leftArgv);
+			}
+			subArgv[j] = new char[strlen(argv[i]) + 1];
+			strcpy(subArgv[j], argv[i]);
+			strncat(subArgv[j], "\0", 1);
+			j++;
+			i++;
+		}
+	}	
+	else{
+		stop = true;
+		int x = execvpCall(argv);
+	}
+}
+int execvpCall(char ** argv)
+{
+//	if(strcmp(argv[0], "exit") == 0)
+//		exit(0);
+	int wait_pid = 0;
+	int pid = fork();
+	if(pid == 0){
+		if(execvp(argv[0], argv) == -1)
+		{
+			perror("execvp");
+			exit(1);
+		}
+	}		
+	else if(pid == -1)
+	{
+		perror("fork");
+		exit(1);
+	}
+	else
+	{
+		wait_pid = waitpid(-1,NULL,0);
+		if(wait_pid == -1)
+		{
+			perror("wait");	
+			exit(1);
+		}
+	}
+	return wait_pid;
+}
+
+bool isSymbol(char **argv)
+{
+	int i = 0;
+	while(argv[i] != NULL)
+	{
+		if(strcmp(argv[i], ";") == 0
+			 || strcmp(argv[i],"&&") == 0
+				 || strcmp(argv[i],"||") == 0)
+			return true;
+		i++;
+	}
+	return false;
+}
+	
+void freeArgv(char ** temp)
+{
+	int i = 0;
+	while(temp[i] != NULL)
+	{
+		delete [] temp[i];
+		temp[i] = NULL;
+		i++;
+	}
+}
+
 
 //......................................................
 //this is testing funciton nothing contribute to main program
@@ -149,7 +275,7 @@ void testString(char * test)
 
 void testArgv(char * test[])
 {
-	cout << "testArgv......................" << endl;
+	cout << "testArgv....." << endl;
 	int i = 0;
 	while(test[i] != NULL){
 		cout << i << " = " << test[i] << endl;
