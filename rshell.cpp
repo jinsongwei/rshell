@@ -55,8 +55,7 @@ int main()
  
 void help()
 {
-	while(1){
-		char * cmdString;
+		char * cmdString = new char[100];
 	        char * argvNew[50];
 		cmdString = inputCommand();
 		cmdString = orgSymbol(cmdString);
@@ -64,12 +63,15 @@ void help()
         	parsingArgv(cmdString, argvNew);
 		executeCmd(argvNew);
 		
-	}
+		delete [] cmdString;
+		cmdString = NULL;
+		freeArgv(argvNew);
+		help();	
 }
 
 char * inputCommand()
 {
-	char *temp = new char[50];
+	char *temp = new char[100];
 	char c;
 	cout << "[rShell_ls] $";
 	while(c != EOF)
@@ -116,8 +118,11 @@ char * orgSymbol(char *temp)
 		i++;
 	}
 	strncat(newString,"\0",1);
+	delete [] temp;
+	temp = NULL;
 	return newString;
 }
+
 char * orgSpaces(char * temp)
 {
 	char * cmd = new char[100];
@@ -140,23 +145,21 @@ char * orgSpaces(char * temp)
 	return cmd;
 }
 
-void parsingArgv(char * temp, char * argvTemp[])
+void parsingArgv(char * temp, char ** argvTemp)
 {
 	int index = 0;
 	char *tok;
 	tok = strtok(temp, " ");
 	while(tok != NULL)
 	{
-		argvTemp[index] = new char[strlen(tok) + 2];
-		strncpy(argvTemp[index], tok, strlen(tok));
+		argvTemp[index] = new char[strlen(tok) + 1];
+		strcpy(argvTemp[index], tok);
 		strncat(argvTemp[index], "\0", 1);
 		index++;
 		tok = strtok(NULL, " ");
 	}
 	argvTemp[index] = NULL;
-	argvTemp[index + 1] = NULL;
-	delete [] temp;
-	temp = NULL;
+	free(tok);
 }
 
 void executeCmd(char **argv)
@@ -177,25 +180,33 @@ void executeCmd(char **argv)
 				wait_pid = execvpCall(subArgv);	
 				freeArgv(subArgv);
 				if((strcmp(argv[i],";") == 0 ||
-					strcmp(argv[i], "&&") == 0) && wait_pid < 0)
-					break;
+					strcmp(argv[i], "&&") == 0) && wait_pid != 0)
+				{	
+					freeArgv(subArgv);
+					stop = true;
+					break;	
+				}
 			//store left of commands
-				int tempIndex = i + 1;
-				char *leftArgv[50];
-				int index = 0;
-				while(argv[tempIndex] != NULL)
-				{
-					leftArgv[index] = new char[strlen(argv[tempIndex])+ 1];
-					strcpy(leftArgv[index], argv[tempIndex]);
-					strncat(leftArgv[index],"\0", 1);
-					index++;
-					tempIndex++;
-				}	
-				leftArgv[index] = NULL;	
-				executeCmd(leftArgv);
-				if(stop)
+				if(argv[i+1] != NULL){
+					int tempIndex = i + 1;
+					char *leftArgv[50];
+					int index = 0;
+					while(argv[tempIndex] != NULL)
+					{
+						leftArgv[index] = new char[strlen(argv[tempIndex])+ 1];
+						strcpy(leftArgv[index], argv[tempIndex]);
+						strncat(leftArgv[index],"\0", 1);
+						index++;
+						tempIndex++;
+					}	
+					leftArgv[index] = NULL;	
+					executeCmd(leftArgv);
+					freeArgv(leftArgv);
+					if(stop)
+						break;
+				}
+				else
 					break;
-				freeArgv(leftArgv);
 			}
 			subArgv[j] = new char[strlen(argv[i]) + 1];
 			strcpy(subArgv[j], argv[i]);
@@ -209,6 +220,7 @@ void executeCmd(char **argv)
 		int x = execvpCall(argv);
 	}
 }
+
 int execvpCall(char ** argv)
 {
 	if(strcmp(argv[0], "exit") == 0)
@@ -218,7 +230,7 @@ int execvpCall(char ** argv)
 	if(pid == 0){
 		if(execvp(argv[0], argv) == -1)
 		{
-			perror("execvp");
+			perror(argv[0]);
 			exit(1);
 		}
 	}		
@@ -229,8 +241,7 @@ int execvpCall(char ** argv)
 	}
 	else
 	{
-		wait_pid = waitpid(-1,NULL,0);
-		if(wait_pid == -1)
+		if(waitpid(pid,&wait_pid,0) == -1)
 		{
 			perror("wait");	
 			exit(1);
@@ -269,7 +280,7 @@ void freeArgv(char ** temp)
 //this is testing funciton nothing contribute to main program
 void testString(char * test)
 {
-	cout << "stirng length = " << strlen(test) << endl;
+	cout << "string length = " << strlen(test) << endl;
 	cout << "string = " << test << endl;
 }
 
@@ -278,9 +289,11 @@ void testArgv(char * test[])
 	cout << "testArgv....." << endl;
 	int i = 0;
 	while(test[i] != NULL){
-		cout << i << " = " << test[i] << endl;
+		cout << i << " "<< strlen(test[i]) << " = " << test[i] << endl;
 		i++;
 	}
+	if(i == 0)
+		cout << "nothing in here" << endl;
 }
 //.......................................................
 
