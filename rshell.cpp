@@ -60,9 +60,9 @@ void help()
 		cmdString = inputCommand();
 		cmdString = orgSymbol(cmdString);
 		cmdString = orgSpaces(cmdString);
-        	parsingArgv(cmdString, argvNew);
+	       	parsingArgv(cmdString, argvNew);
 		executeCmd(argvNew);
-		
+
 		delete [] cmdString;
 		cmdString = NULL;
 		freeArgv(argvNew);
@@ -113,6 +113,10 @@ char * orgSymbol(char *temp)
 			strncat(newString, " || ", 4);
 			i++;
 		}
+		else if(temp[i] == '#')
+		{
+			strncat(newString, " # ", 3);
+		}
 		else 
 			strncat(newString, &temp[i],1);
 		i++;
@@ -140,6 +144,7 @@ char * orgSpaces(char * temp)
 		i++;
 	}
 	strncat(cmd, "\0", 1);
+
 	delete temp;
 	temp = NULL;
 	return cmd;
@@ -150,7 +155,7 @@ void parsingArgv(char * temp, char ** argvTemp)
 	int index = 0;
 	char *tok;
 	tok = strtok(temp, " ");
-	while(tok != NULL)
+	while(tok != NULL && (strcmp(tok, "#") != 0))
 	{
 		argvTemp[index] = new char[strlen(tok) + 1];
 		strcpy(argvTemp[index], tok);
@@ -159,7 +164,6 @@ void parsingArgv(char * temp, char ** argvTemp)
 		tok = strtok(NULL, " ");
 	}
 	argvTemp[index] = NULL;
-	free(tok);
 }
 
 void executeCmd(char **argv)
@@ -223,6 +227,11 @@ void executeCmd(char **argv)
 
 int execvpCall(char ** argv)
 {
+	if(argv[0] == NULL)
+	{
+		cerr << "wrong format of command "<< endl;
+		help();
+	}
 	if(strcmp(argv[0], "exit") == 0)
 		exit(0);
 	int wait_pid = 0;
