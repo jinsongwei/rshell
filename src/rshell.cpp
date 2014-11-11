@@ -71,11 +71,9 @@ void help()
 
 char * inputCommand()
 {
-	char *urname = getlogin();
-
 	char *temp = new char[100];
 	char c;
-	cout << "[rShell_ls_/"<< urname << "] $";
+	cout << "[rShell_ls] $";
 	while(c != EOF)
 	{
 		c = getchar();
@@ -223,7 +221,7 @@ void executeCmd(char **argv)
 	}	
 	else{
 		stop = true;
-		execvpCall(argv);
+		int x = execvpCall(argv);
 	}
 }
 
