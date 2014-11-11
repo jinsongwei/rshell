@@ -221,7 +221,7 @@ void executeCmd(char **argv)
 	}	
 	else{
 		stop = true;
-		int x = execvpCall(argv);
+		execvpCall(argv);
 	}
 }
 
