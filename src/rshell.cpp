@@ -71,16 +71,21 @@ void help()
 
 char * inputCommand()
 {
+	char *htname = new char[64];
+	if(gethostname(htname,64) == -1)
+	{
+		perror("gethostname");
+	}
 	char *temp = new char[100];
 	char c;
-	cout << "[rShell_ls] $";
+	cout << "[rShell_"<< getlogin() <<"/"<< htname << "] $";
 	while(c != EOF)
 	{
 		c = getchar();
 		if(c == '\n')
 		{
 	        	if(temp[0] == '\0')
- 				cout << "[rShell_ls] $";
+ 				cout << "[rShell_"<< getlogin() << "/"<< htname <<"] $";
 			else
 			{
                                 strncat(temp, "\0", 1);
