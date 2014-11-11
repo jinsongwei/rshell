@@ -1,0 +1,44 @@
+Script started on Mon 10 Nov 2014 03:10:42 AM PST
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshell/testsjinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell/tests$  ls
+exec
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshell/testsjinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell/tests$  cd ..
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ g++ r shell.cpp
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ a.[K[K./a.o ut
+[rShell_ls] $ls
+a.out  ls.cpp  README  rshell.cpp  temp  tests
+[rShell_ls] $pwd
+/home/jinsongwei/Desktop/rshell
+[rShell_ls] $ls ;pwd
+a.out  ls.cpp  README  rshell.cpp  temp  tests
+/home/jinsongwei/Desktop/rshell
+[rShell_ls] $pwd;ls&&pwd##    #ignore here
+/home/jinsongwei/Desktop/rshell
+a.out  ls.cpp  README  rshell.cpp  temp  tests
+/home/jinsongwei/Desktop/rshell
+[rShell_ls] $;
+wrong format of command 
+[rShell_ls] $pwd     ls -l
+total 44
+-rwxrwxr-x 1 jinsongwei jinsongwei 18677 Nov 10 03:11 a.out
+-rw-rw-r-- 1 jinsongwei jinsongwei  4034 Nov  9 19:39 ls.cpp
+-rw-rw-r-- 1 jinsongwei jinsongwei   158 Nov 10 02:31 README
+-rw-rw-r-- 1 jinsongwei jinsongwei  5525 Nov 10 02:25 rshell.cpp
+drwxrwxr-x 3 jinsongwei jinsongwei  4096 Nov  8 23:59 temp
+drwxrwxr-x 2 jinsongwei jinsongwei  4096 Nov 10 03:10 tests
+[rShell_ls] $ls || pwd || echo hello
+a.out  ls.cpp  README  rshell.cpp  temp  tests
+/home/jinsongwei/Desktop/rshell
+hello
+[rShell_ls] $ls &&      ls  slll &&ls  pwd
+a.out  ls.cpp  README  rshell.cpp  temp  tests
+slll: No such file or directory
+[rShell_ls] $echo ""^[[D     this is test"
+"this is test"
+[rShell_ls] $exit
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ ./a.ouut
+[rShell_ls] $ls &&exit ; pwd
+a.out  ls.cpp  README  rshell.cpp  temp  tests
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ exit
+exit
+
+Script done on Mon 10 Nov 2014 03:13:28 AM PST
