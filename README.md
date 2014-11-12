@@ -29,11 +29,15 @@ tests
 ```
 /src:
 
+ls.cpp
+
 rshell.cpp
 ```
 
 ```
 /tests:
+
+ls.script
 
 exec.script
 ```
