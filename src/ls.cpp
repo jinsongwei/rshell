@@ -22,6 +22,7 @@
 static bool is_l = false;
 static bool is_a = false;
 static char *path; 
+
 using namespace std;
 
 //.........................................
@@ -30,8 +31,23 @@ void testString(char * test);
 void testArgv(char * test[]);
 //........................................
 
+//get commands from the userinput.
+void initialArgv();
+
 
 void help(int argc, char ** argv);
+
+//++++++++++
+//user input a whole string, terminate untill enter
+char * inputCommand();
+
+//organize spaces that only have one space between two argument.
+char * orgSpaces(char * cmd);
+
+//pass commands in temp to argvNew spearate by space.
+void parsingArgv(char * temp, char ** argvTemp);
+//+++++++++++
+
 
 //open dir and store files
 void inDirectory(char ** files, char ** visibleFiles, char *dirName);
@@ -63,8 +79,24 @@ void print(char ** temp);
 
 int main(int argc, char **argv)
 {
-          help(argc, argv);
-          return 0;
+ 	initialArgv();
+	return 0;
+}
+
+void initialArgv()
+{
+	char * cmdString = new char[100];
+	char * argvNew[50];
+	cmdString = inputCommand();
+	cmdString = orgSpaces(cmdString);
+	parsingArgv(cmdString, argvNew);
+	int argcNew = 0;
+	while(argvNew[argcNew] != NULL)
+		argcNew++;
+        help(argcNew, argvNew);
+
+	initialArgv();	
+        
 }
  
 void help(int argc, char ** argv)
@@ -74,9 +106,9 @@ void help(int argc, char ** argv)
 	char c[2] = ".";
 	int flag = 0;
 	bool anotherPath= false;
-	if(strcmp(argv[1],"ls") == 0)
+	if(strcmp(argv[0],"ls") == 0)
 	{
-		for(int i = 2; i < argc; i++)
+		for(int i = 1; i < argc; i++)
 		{
 			if(argv[i][0] == '-')
 			{
@@ -97,14 +129,14 @@ void help(int argc, char ** argv)
 				if(chdir(argv[i]) == -1)
 				{
 					perror("chdir");
-					exit(1);
+					initialArgv();
 				}
 				anotherPath = true;
 				path = argv[i];
 			}
 			else{
 				cerr << "no such argument "<< endl;
-				exit(1);
+				initialArgv();
 			}
 		}
 		if(!anotherPath){
@@ -114,9 +146,10 @@ void help(int argc, char ** argv)
 	}
 	else
 	{
-		cerr << argv[1] <<": no such command in this shell " << endl;
-		exit(1);
+		cerr << argv[0] <<": no such command in this shell " << endl;
+		initialArgv();
 	}
+
 	switch (flag){
 		case 0: print(visibleFiles);  break;
 			
@@ -139,7 +172,7 @@ void help(int argc, char ** argv)
 			break;
 		default:
 			cerr << "wrong option" << endl;
-			exit(1);
+			initialArgv();
 			break;	
 			
 		
@@ -148,13 +181,86 @@ void help(int argc, char ** argv)
 	freeArray(visibleFiles);
 }
 
+char * inputCommand()
+{
+	int i = 0;
+	char *temp= new char[50];
+	memset(temp,'\0',50);
+	char c = ' ';
+	cout << "[rShell_] $";
+	while(c != '\0')
+	{
+		c = getchar();
+		if(c == '\n')
+		{
+	        	if(temp[0] == '\0')
+ 				cout << "[rShell_] $";
+			else
+			{
+                                strncat(temp, "\0", 1);
+				break;
+	                }
+		}
+		else
+		{
+			strncat(temp, &c, 1);
+		}
+		i++;
+	}
+		return temp;
+}
+
+
+char * orgSpaces(char * temp)
+{
+	char * cmd = new char[100];
+	memset(cmd, '\0',100);
+	int i = 0;
+	while(temp[i] != '\0'){
+		if(temp[i] == ' '){
+			while(temp[i+1] == ' '){
+				if(temp[i+1] == '\0')
+					break;
+				else
+					i++;
+			}
+		}
+		strncat(cmd, &temp[i],1);
+		i++;
+	}
+	strncat(cmd, "\0", 1);
+
+	delete temp;
+	temp = NULL;
+	return cmd;
+}
+
+
+
+void parsingArgv(char * temp, char ** argvTemp)
+{
+	int index = 0;
+	char *tok;
+	tok = strtok(temp, " ");
+	while(tok != NULL && (strcmp(tok, "#") != 0))
+	{
+		argvTemp[index] = new char[strlen(tok) + 1];
+		strcpy(argvTemp[index], tok);
+		strncat(argvTemp[index], "\0", 1);
+		index++;
+		tok = strtok(NULL, " ");
+	}
+	argvTemp[index] = NULL;
+}
+
+
 void inDirectory(char ** files, char ** visibleFiles, char * dirName)
 {
 	DIR *dirp = opendir(dirName);
 	if (dirp == NULL)
 	{
 		perror("opendir");
-		exit(1);
+		initialArgv();	
 	}
 	dirent *direntp;
 	int index = 0;
@@ -184,21 +290,11 @@ void inDirectory(char ** files, char ** visibleFiles, char * dirName)
 
 void print(char ** temp)
 {
-	/*
-	int i = 1;
-	int maxLen = strlen(temp[0]);
-	while(temp[i] != NULL)
-	{
-		if(maxLen < strlen(temp[i]))
-			maxLen += strlen(temp[i]);
-		i++;
-	}
-	*/
 	int i = 0;
 	while(temp[i] != NULL)
 	{
 		cout << left << setw(15) << temp[i];
-		if(i % 5 == 4)
+		if(i % 6 == 4)
 		cout << endl;
 		i++;
 	}
@@ -222,7 +318,7 @@ void printInfoHelp(char *file)
 	if(stat(file, &statbuf) == -1)
 	{
 		perror("stat");
-		exit(1);
+		initialArgv();
 	}
 
 	if(S_ISDIR(statbuf.st_mode))
@@ -318,7 +414,7 @@ void printAllDirHelp(char *afile)
 	if(stat(afile, &buf) == -1)
 	{
 		perror("stat");
-		exit(1);
+		initialArgv();
 	}
 	else{
 		if(S_ISDIR(buf.st_mode))
@@ -348,7 +444,7 @@ void printAllDirHelp(char *afile)
 			if(chdir(afile) == -1)
 			{
 				perror(" ");
-				exit(1);
+				initialArgv();
 			}
 			if(is_a)
 				printAllDir(fAll);
@@ -358,7 +454,7 @@ void printAllDirHelp(char *afile)
 			if(chdir(currentDir) == -1)
 			{
 				perror(" ");
-				exit(1);
+				initialArgv();
 			}	
 			freeArray(fAll);
 			freeArray(fvisib);
