@@ -327,7 +327,7 @@ void printAllDirHelp(char *afile)
 			char *currentDir = get_current_dir_name();
 			int index = strlen(path);
 			int temp = strlen(currentDir) - strlen(path);
-			char curPath[temp + 1];
+			char *curPath = new char[temp + 1];
 			if(temp == 0){
 				strncat(curPath,"\0",1);
 				cout << afile << ": " << endl;
