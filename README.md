@@ -39,7 +39,24 @@ exec.script
 ```
 
 bugs:
-	1: cann't use up-down-left-right keyboard. 
-	2: some feature of git command doesn't work well, especially " symbols
-	3: cd command doesn't work.
-	4: the maximun command strings can only contain 100. It is not unlimit.'	5: if the commands doesn't exist then return notice, but if there is unformatted symbols or spaces in the first position, then return "wrong format"
+---
+1: cann't use up-down-left-right keyboard. 
+
+2: some feature of git command doesn't work well, especially " symbols
+
+3: cd command doesn't work.
+
+4: the maximun command strings can only contain 100. It is not unlimit.'	5: if the commands doesn't exist then return notice, but if there is unformatted symbols or spaces in the first position, then return "wrong format"
+
+ls.cpp
+---
+
+this function only for ls command.
+
+bugs:
+---
+1: cann't use up-down-left-right keyboard. 
+
+2: there is a limit for commands, it's not unlimit. 
+
+
