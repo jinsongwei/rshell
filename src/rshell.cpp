@@ -77,6 +77,7 @@ char * inputCommand()
 		perror("gethostname");
 	}
 	char *temp = new char[100];
+	memset(temp, '\0', 100);
 	char c;
 	cout << "[rShell_"<< getlogin() <<"/"<< htname << "] $";
 	while(c != EOF)
@@ -101,6 +102,7 @@ char * inputCommand()
 char * orgSymbol(char *temp)
 {
 	char *newString = new char[100];
+	memset(newString, '\0',100);
 	int i = 0;
 	while(temp[i] != '\0')
 	{
@@ -135,6 +137,7 @@ char * orgSymbol(char *temp)
 char * orgSpaces(char * temp)
 {
 	char * cmd = new char[100];
+	memset(cmd, '\0',100);
 	int i = 0;
 	while(temp[i] != '\0'){
 		if(temp[i] == ' '){
