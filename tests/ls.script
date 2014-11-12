@@ -1,0 +1,669 @@
+Script started on Tue 11 Nov 2014 08:49:48 PM PST
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshell/testsjinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell/tests$ pwd
+/home/jinsongwei/Desktop/rshell/tests
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshell/testsjinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell/tests$ l[Kcd ..
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ ls
+Makefile  README.md  [0m[01;34msrc[0m  [01;34mtests[0m
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ make
+mkdir bin
+g++ -Wall -Werror -ansi -pedantic ./src/rshell.cpp -o ./bin/rshell 
+g++ -Wall -Werror -ansi -pedantic ./src/ls.cpp -o ./bin/ls 
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ bin/ls
+[rShell_] $ls
+bin            Makefile       src            README.md      tests          
+
+[rShell_] $ls -a
+.              bin            Makefile       src            README.md      
+..             .git           tests          
+[rShell_] $ls -l
+drwxrwxr-x  2 ^C
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ bin/ls
+[rShell_] $ls -l
+drwxrwxr-x  2 ^C
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ bin/ls
+[rShell_] $ls -R
+bin            Makefile       src            README.md      tests          
+
+
+bin: 
+rshell         ls             
+
+src: 
+ls.cpp         rshell.cpp     
+
+tests: 
+exec.script    ls.script      
+
+[rShell_] $ls -aL
+.              bin            Makefile       src            README.md      
+..             .git           tests          
+[rShell_] $ls -aR
+.              bin            Makefile       src            README.md      
+..             .git           tests          
+
+bin: 
+rshell         ls             
+
+src: 
+ls.cpp         rshell.cpp     
+
+.git: 
+objects        MERGE_MSG M-A  info           index          description    
+branches       hooks          refs           HEAD           COMMIT_EDITMSGM-AORIG_HEAD      
+config         logs           COMMIT_EDITMSG 
+
+/.git/objects: 
+11             e0             d5             fe             f6             
+74             31             pack           02             c1             34             
+d6             89             info           7b             3f             f1             
+b6             38             33             de             90             dd             
+cc             f4             50             2b             a1             8d             
+0d             3b             3d             7c             be             df             
+82             1b             85             59             9c             53             
+07             51             94             c7             97             bc             
+26             64             2d             9e             b3             a9             
+35             e6             52             cb             6d             7d             
+66             19             bb             a0             a2             c2             
+30             08             fa             9b             c4             7f             
+1f             27             67             40             5b             6f             
+d0             03             
+
+/.git/objects/11: 
+e56055d67ddba18c4741ebdf73429b126b8cc9
+
+/.git/objects/e0: 
+86d4071c3eb7bc64f44ee96d271663364cc2bf
+
+/.git/objects/d5: 
+4de3449539792b3eb18f8fc0160db49c0ab85f
+
+/.git/objects/fe: 
+9ac2366b1bda1f07df38ce9c33c3a45b26e8c4
+
+/.git/objects/f6: 
+da0dfbbcf6d9fe99a0a035909f3ebb832eddc7
+
+/.git/objects/74: 
+324c6c1f4488e47a05e240fb33a2970296311b
+
+/.git/objects/31: 
+772d284da76cb09a50d93c6055b3595710cbdb
+
+/.git/objects/pack: 
+
+
+/.git/objects/02: 
+dbb72aa5765b81934f0c5b131ae5683dd6871c
+
+/.git/objects/c1: 
+e5855e496f37c95858f8ebddbe5c164e7f7704
+
+/.git/objects/34: 
+5329cbdac9989cf4e6968b8c32c1b88e30fdf2
+
+/.git/objects/d6: 
+f65e9d5228e1fca1f1c2d4fbaec3b4b6b5ffff
+
+/.git/objects/89: 
+715170b85d25b8938aa067a91cb975485e6857
+
+/.git/objects/info: 
+
+
+/.git/objects/7b: 
+61345057a7ed56ad270a34c2ca4f8fbf380e35
+
+/.git/objects/3f: 
+d84ea958897a058a6707d54fd35bbb3d4d51d5
+
+/.git/objects/f1: 
+7b649c96fb3668450aac1e393d13e3bb64f83b
+
+/.git/objects/b6: 
+e5f8b1f060ed64b269006bc4568bd2c9e7192b
+
+/.git/objects/38: 
+9729188e6d8ed73a6b9006c185525ef4b0cc66
+
+/.git/objects/33: 
+fb1bd4b74539ee37aecfa95a677536e61cd245
+
+/.git/objects/de: 
+dfdd449f6794c58d5626a2d4ed41b9e1be2c62
+
+/.git/objects/90: 
+4f48aac54afa6a27dc3c2e681d1531fd79b52c
+
+/.git/objects/dd: 
+f38c0acec586aadfaad4c417137b889155c5ff064b7bfe8d2bff9583a992806e14d7d668d459
+
+/.git/objects/cc: 
+5531433dc9b002006e6c14aa16e3685dd20ef3
+
+/.git/objects/f4: 
+f942e6db34b1381c39127e233d91ad41182d14
+
+/.git/objects/50: 
+f089e86f96954748a5e81a2cc6b5380b559307
+
+/.git/objects/2b: 
+23f14da1b8c7db08ccdcb7cfee090ffe40098c03e9dbd421776a10df81d9be81cb131ecbdb1c
+
+/.git/objects/a1: 
+2e27e826c90cce4e35215859f524d0fa094f8b38d875dc327c888f50242e031b2f99f59f0b61fb21ff95cb1fd915abfd32d3158b19ec391517
+
+/.git/objects/8d: 
+e9d348a97c30789fedb097acea787e7dcd2002
+
+/.git/objects/0d: 
+2274cac833db08d8b1324882f1f839ebfa39de
+
+/.git/objects/3b: 
+e93ece96878f759bd284c3af04faf598c0f4d1
+
+/.git/objects/3d: 
+74a4e98bc6d29f37ef5ba1c25e257c98cfbb34
+
+/.git/objects/7c: 
+a2212e05d81bd4dc0478c9d331264a63b610493142500e2b178deaa82f58d44df03d8b88ccef
+
+/.git/objects/be: 
+d3500f02dd22f24ce86dba258163dcba56c0db76b4d4be0094c846986f619a4c8bc0907eb823
+
+/.git/objects/df: 
+01490d7c7b7e2f709d2aac1efbf67897505841
+
+/.git/objects/82: 
+634abe6bb04e99755dbd0181ebabd5f1cc2ade
+
+/.git/objects/1b: 
+212110b61ea2de04414efbae6942d7ad7c295c
+
+/.git/objects/85: 
+7b5115a39a564be9c7cb26f252c497d489e98d
+
+/.git/objects/59: 
+22dad4ee3d03251da31aa6a11ed1739795d035
+
+/.git/objects/9c: 
+ad54ff47c9484978ddb3d415d54e77809607010acc7b4fbcbcfb0f9693db9d5ed54d404dff52
+
+/.git/objects/53: 
+b56f49ef3ade710c900f69e6a6f3acca65ec33
+
+/.git/objects/07: 
+e899d9c6dbc81ca673fd713a2116e79e026983
+
+/.git/objects/51: 
+29a6f043757081017a4058142f6b58c690c18e319ffd661f023cf3d1d869d9ac877f899f6933
+
+/.git/objects/94: 
+96abe113d2cb6609083300c372afe4197bef76
+
+/.git/objects/c7: 
+e333796c57dc596450dd72ed303b91be521042
+
+/.git/objects/97: 
+cc6c48201cf3acfcd493c6f050dd267d79de23
+
+/.git/objects/bc: 
+b0cb129ffc4bb2b6f0a7b0230e95bf30ebbe98
+
+/.git/objects/26: 
+1f9f569ce3bd51b4277fc4a5089753f5dac847
+
+/.git/objects/64: 
+4cf69b418608cb23d73d1728165ef10048745b
+
+/.git/objects/2d: 
+7852cf38f0e68ec0d9f4a5283475fc0812bb14
+
+/.git/objects/9e: 
+28176a82dbf2ad83514e3078efbca2c14f8ef2
+
+/.git/objects/b3: 
+f0d5e8c40686ccb79346857b0097e5e49bdfe9b1ae38d99f14595ef5db4d2bf2597c9ef41366
+
+/.git/objects/a9: 
+67a048ca0c3b83a0887bf6c91a7b1015e8a458
+
+/.git/objects/35: 
+a40fd1c225fc4b3e65826246b91562409e2b81cf87ddaae70fcfd7127c9e7996843b1439c812
+
+/.git/objects/e6: 
+1cb0803cee303d0fad87f8f431316ea23966f5
+
+/.git/objects/52: 
+4e476e9fd5fd71d28a5032ad7fb9054ec9b26a
+
+/.git/objects/cb: 
+34bcba386b2832a3edaeb10910c2e4d2e697c8
+
+/.git/objects/6d: 
+c98f94ad1b569d83da332b0d5938df29078a95
+
+/.git/objects/7d: 
+a43e0011a9fdb2d89f79e3b094151d91c4aed4
+
+/.git/objects/66: 
+c1013a544e2995b10ec8e1e2477aa3880d7e2fe1019facf5759baf9dc2e388c36e67ff6dda8d
+
+/.git/objects/19: 
+4dce83e204e74416d1d45ea2632dedbd29a2c7
+
+/.git/objects/bb: 
+fc4ee16dba0bed1c31484a1b83eb0c969338ff
+
+/.git/objects/a0: 
+ce90a1e0c2a0f759be044a9a21dd300fbcf5c7
+
+/.git/objects/a2: 
+15361a97424fefef352cbe79f55210674b56f4
+
+/.git/objects/c2: 
+7652ffdbff6a2b51773656d8161db11fdbea2fde7698a101b7779f8db818bc020cc5a80ded81
+
+/.git/objects/30: 
+6abe891eb02ab1de9b9a81a64e608b7d0b2262
+
+/.git/objects/08: 
+97fe8110ab63f4cb502e03d185f9717522d3ec
+
+/.git/objects/fa: 
+3461db76d2a623e022c651f534dbec152cdeaf14b06a442290d2fa0d3e3bb519cd37b215f1b9
+
+/.git/objects/9b: 
+e778a45510ebf1ca6a25daef3805b02fd68c57
+
+/.git/objects/c4: 
+8f0c0e86c615c0167d593b10df579017e84f30579b086a84e229933d6b8deee2569613b8fc57
+
+/.git/objects/7f: 
+0f031228e5181db1439f58ee682717de478e41
+
+/.git/objects/1f: 
+48072bb96a037e6b27fd37df1a002b7145d638
+
+/.git/objects/27: 
+5a817b60600909283b66589f0a708c1fc3e4aa59a5e081d9050b859d19bb4738b3d456c7e5ef
+
+/.git/objects/67: 
+d498d5b2bc5e6a3149d0bc40a68e6516b46ccf
+
+/.git/objects/40: 
+61be9560c7c42941dac7a084363784f10c895288392d3cc53489f093b65600f07a11921bab3e
+
+/.git/objects/5b: 
+f67027903599ee0b84d52c3837f107c97ba800
+
+/.git/objects/6f: 
+d6a296beb63ea674077b4632d11a3d6a690f35a72ac3122a74fec6b9b737732387950059e91a
+
+/.git/objects/d0: 
+8baf83df49b6ca35e3f7858b24160bc30ea989
+
+/.git/objects/03: 
+23ae7c421091d7ac8d39d55d3058f85edd53cdbd70471395228c0b19f4169830f96774a56c2d
+
+/.git/info: 
+exclude        
+
+/.git/branches: 
+
+
+/.git/hooks: 
+pre-applypatch.sampleapplypatch-msg.samplepre-commit.samplecommit-msg.samplepre-push.sample
+prepare-commit-msg.samplepost-update.samplepre-rebase.sampleupdate.sample  
+
+/.git/refs: 
+heads          remotes        tags           
+
+/.git/refs/heads: 
+master         exec           hw1            
+
+/.git/refs/remotes: 
+origin         
+
+/.git/refs/remotes/origin: 
+master         
+
+/.git/refs/tags: 
+
+
+/.git/logs: 
+refs           HEAD           
+
+/.git/logs/refs: 
+heads          remotes        
+
+/.git/logs/refs/heads: 
+master         exec           hw1            
+
+/.git/logs/refs/remotes: 
+origin         
+
+/.git/logs/refs/remotes/origin: 
+master         
+
+tests: 
+exec.script    ls.script      
+
+[rShell_] $ls -al /  jinsongwei          home. /jinsongwei/Desktop/rshell
+drwxrwxr-x  6 ^C
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ bin/ls
+[rShell_] $ls -aR /home	/jinsongwei/Desktp op/rshell
+.              bin            Makefile       src            README.md      
+..             .git           tests          
+
+bin: 
+rshell         ls             
+
+src: 
+ls.cpp         rshell.cpp     
+
+.git: 
+objects        MERGE_MSG M-A  info           index          description    
+branches       hooks          refs           HEAD           COMMIT_EDITMSGM-AORIG_HEAD      
+config         logs           COMMIT_EDITMSG 
+
+/.git/objects: 
+11             e0             d5             fe             f6             
+74             31             pack           02             c1             34             
+d6             89             info           7b             3f             f1             
+b6             38             33             de             90             dd             
+cc             f4             50             2b             a1             8d             
+0d             3b             3d             7c             be             df             
+82             1b             85             59             9c             53             
+07             51             94             c7             97             bc             
+26             64             2d             9e             b3             a9             
+35             e6             52             cb             6d             7d             
+66             19             bb             a0             a2             c2             
+30             08             fa             9b             c4             7f             
+1f             27             67             40             5b             6f             
+d0             03             
+
+/.git/objects/11: 
+e56055d67ddba18c4741ebdf73429b126b8cc9
+
+/.git/objects/e0: 
+86d4071c3eb7bc64f44ee96d271663364cc2bf
+
+/.git/objects/d5: 
+4de3449539792b3eb18f8fc0160db49c0ab85f
+
+/.git/objects/fe: 
+9ac2366b1bda1f07df38ce9c33c3a45b26e8c4
+
+/.git/objects/f6: 
+da0dfbbcf6d9fe99a0a035909f3ebb832eddc7
+
+/.git/objects/74: 
+324c6c1f4488e47a05e240fb33a2970296311b
+
+/.git/objects/31: 
+772d284da76cb09a50d93c6055b3595710cbdb
+
+/.git/objects/pack: 
+
+
+/.git/objects/02: 
+dbb72aa5765b81934f0c5b131ae5683dd6871c
+
+/.git/objects/c1: 
+e5855e496f37c95858f8ebddbe5c164e7f7704
+
+/.git/objects/34: 
+5329cbdac9989cf4e6968b8c32c1b88e30fdf2
+
+/.git/objects/d6: 
+f65e9d5228e1fca1f1c2d4fbaec3b4b6b5ffff
+
+/.git/objects/89: 
+715170b85d25b8938aa067a91cb975485e6857
+
+/.git/objects/info: 
+
+
+/.git/objects/7b: 
+61345057a7ed56ad270a34c2ca4f8fbf380e35
+
+/.git/objects/3f: 
+d84ea958897a058a6707d54fd35bbb3d4d51d5
+
+/.git/objects/f1: 
+7b649c96fb3668450aac1e393d13e3bb64f83b
+
+/.git/objects/b6: 
+e5f8b1f060ed64b269006bc4568bd2c9e7192b
+
+/.git/objects/38: 
+9729188e6d8ed73a6b9006c185525ef4b0cc66
+
+/.git/objects/33: 
+fb1bd4b74539ee37aecfa95a677536e61cd245
+
+/.git/objects/de: 
+dfdd449f6794c58d5626a2d4ed41b9e1be2c62
+
+/.git/objects/90: 
+4f48aac54afa6a27dc3c2e681d1531fd79b52c
+
+/.git/objects/dd: 
+f38c0acec586aadfaad4c417137b889155c5ff064b7bfe8d2bff9583a992806e14d7d668d459
+
+/.git/objects/cc: 
+5531433dc9b002006e6c14aa16e3685dd20ef3
+
+/.git/objects/f4: 
+f942e6db34b1381c39127e233d91ad41182d14
+
+/.git/objects/50: 
+f089e86f96954748a5e81a2cc6b5380b559307
+
+/.git/objects/2b: 
+23f14da1b8c7db08ccdcb7cfee090ffe40098c03e9dbd421776a10df81d9be81cb131ecbdb1c
+
+/.git/objects/a1: 
+2e27e826c90cce4e35215859f524d0fa094f8b38d875dc327c888f50242e031b2f99f59f0b61fb21ff95cb1fd915abfd32d3158b19ec391517
+
+/.git/objects/8d: 
+e9d348a97c30789fedb097acea787e7dcd2002
+
+/.git/objects/0d: 
+2274cac833db08d8b1324882f1f839ebfa39de
+
+/.git/objects/3b: 
+e93ece96878f759bd284c3af04faf598c0f4d1
+
+/.git/objects/3d: 
+74a4e98bc6d29f37ef5ba1c25e257c98cfbb34
+
+/.git/objects/7c: 
+a2212e05d81bd4dc0478c9d331264a63b610493142500e2b178deaa82f58d44df03d8b88ccef
+
+/.git/objects/be: 
+d3500f02dd22f24ce86dba258163dcba56c0db76b4d4be0094c846986f619a4c8bc0907eb823
+
+/.git/objects/df: 
+01490d7c7b7e2f709d2aac1efbf67897505841
+
+/.git/objects/82: 
+634abe6bb04e99755dbd0181ebabd5f1cc2ade
+
+/.git/objects/1b: 
+212110b61ea2de04414efbae6942d7ad7c295c
+
+/.git/objects/85: 
+7b5115a39a564be9c7cb26f252c497d489e98d
+
+/.git/objects/59: 
+22dad4ee3d03251da31aa6a11ed1739795d035
+
+/.git/objects/9c: 
+ad54ff47c9484978ddb3d415d54e77809607010acc7b4fbcbcfb0f9693db9d5ed54d404dff52
+
+/.git/objects/53: 
+b56f49ef3ade710c900f69e6a6f3acca65ec33
+
+/.git/objects/07: 
+e899d9c6dbc81ca673fd713a2116e79e026983
+
+/.git/objects/51: 
+29a6f043757081017a4058142f6b58c690c18e319ffd661f023cf3d1d869d9ac877f899f6933
+
+/.git/objects/94: 
+96abe113d2cb6609083300c372afe4197bef76
+
+/.git/objects/c7: 
+e333796c57dc596450dd72ed303b91be521042
+
+/.git/objects/97: 
+cc6c48201cf3acfcd493c6f050dd267d79de23
+
+/.git/objects/bc: 
+b0cb129ffc4bb2b6f0a7b0230e95bf30ebbe98
+
+/.git/objects/26: 
+1f9f569ce3bd51b4277fc4a5089753f5dac847
+
+/.git/objects/64: 
+4cf69b418608cb23d73d1728165ef10048745b
+
+/.git/objects/2d: 
+7852cf38f0e68ec0d9f4a5283475fc0812bb14
+
+/.git/objects/9e: 
+28176a82dbf2ad83514e3078efbca2c14f8ef2
+
+/.git/objects/b3: 
+f0d5e8c40686ccb79346857b0097e5e49bdfe9b1ae38d99f14595ef5db4d2bf2597c9ef41366
+
+/.git/objects/a9: 
+67a048ca0c3b83a0887bf6c91a7b1015e8a458
+
+/.git/objects/35: 
+a40fd1c225fc4b3e65826246b91562409e2b81cf87ddaae70fcfd7127c9e7996843b1439c812
+
+/.git/objects/e6: 
+1cb0803cee303d0fad87f8f431316ea23966f5
+
+/.git/objects/52: 
+4e476e9fd5fd71d28a5032ad7fb9054ec9b26a
+
+/.git/objects/cb: 
+34bcba386b2832a3edaeb10910c2e4d2e697c8
+
+/.git/objects/6d: 
+c98f94ad1b569d83da332b0d5938df29078a95
+
+/.git/objects/7d: 
+a43e0011a9fdb2d89f79e3b094151d91c4aed4
+
+/.git/objects/66: 
+c1013a544e2995b10ec8e1e2477aa3880d7e2fe1019facf5759baf9dc2e388c36e67ff6dda8d
+
+/.git/objects/19: 
+4dce83e204e74416d1d45ea2632dedbd29a2c7
+
+/.git/objects/bb: 
+fc4ee16dba0bed1c31484a1b83eb0c969338ff
+
+/.git/objects/a0: 
+ce90a1e0c2a0f759be044a9a21dd300fbcf5c7
+
+/.git/objects/a2: 
+15361a97424fefef352cbe79f55210674b56f4
+
+/.git/objects/c2: 
+7652ffdbff6a2b51773656d8161db11fdbea2fde7698a101b7779f8db818bc020cc5a80ded81
+
+/.git/objects/30: 
+6abe891eb02ab1de9b9a81a64e608b7d0b2262
+
+/.git/objects/08: 
+97fe8110ab63f4cb502e03d185f9717522d3ec
+
+/.git/objects/fa: 
+3461db76d2a623e022c651f534dbec152cdeaf14b06a442290d2fa0d3e3bb519cd37b215f1b9
+
+/.git/objects/9b: 
+e778a45510ebf1ca6a25daef3805b02fd68c57
+
+/.git/objects/c4: 
+8f0c0e86c615c0167d593b10df579017e84f30579b086a84e229933d6b8deee2569613b8fc57
+
+/.git/objects/7f: 
+0f031228e5181db1439f58ee682717de478e41
+
+/.git/objects/1f: 
+48072bb96a037e6b27fd37df1a002b7145d638
+
+/.git/objects/27: 
+5a817b60600909283b66589f0a708c1fc3e4aa59a5e081d9050b859d19bb4738b3d456c7e5ef
+
+/.git/objects/67: 
+d498d5b2bc5e6a3149d0bc40a68e6516b46ccf
+
+/.git/objects/40: 
+61be9560c7c42941dac7a084363784f10c895288392d3cc53489f093b65600f07a11921bab3e
+
+/.git/objects/5b: 
+f67027903599ee0b84d52c3837f107c97ba800
+
+/.git/objects/6f: 
+d6a296beb63ea674077b4632d11a3d6a690f35a72ac3122a74fec6b9b737732387950059e91a
+
+/.git/objects/d0: 
+8baf83df49b6ca35e3f7858b24160bc30ea989
+
+/.git/objects/03: 
+23ae7c421091d7ac8d39d55d3058f85edd53cdbd70471395228c0b19f4169830f96774a56c2d
+
+/.git/info: 
+exclude        
+
+/.git/branches: 
+
+
+/.git/hooks: 
+pre-applypatch.sampleapplypatch-msg.samplepre-commit.samplecommit-msg.samplepre-push.sample
+prepare-commit-msg.samplepost-update.samplepre-rebase.sampleupdate.sample  
+
+/.git/refs: 
+heads          remotes        tags           
+
+/.git/refs/heads: 
+master         exec           hw1            
+
+/.git/refs/remotes: 
+origin         
+
+/.git/refs/remotes/origin: 
+master         
+
+/.git/refs/tags: 
+
+
+/.git/logs: 
+refs           HEAD           
+
+/.git/logs/refs: 
+heads          remotes        
+
+/.git/logs/refs/heads: 
+master         exec           hw1            
+
+/.git/logs/refs/remotes: 
+origin         
+
+/.git/logs/refs/remotes/origin: 
+master         
+
+tests: 
+exec.script    ls.script      
+
+[rShell_] $^C
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ exit
+exit
+
+Script done on Tue 11 Nov 2014 08:52:06 PM PST
