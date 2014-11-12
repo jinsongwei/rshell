@@ -294,7 +294,7 @@ void print(char ** temp)
 	while(temp[i] != NULL)
 	{
 		cout << left << setw(15) << temp[i];
-		if(i % 5 == 4)
+		if(i % 6 == 4)
 		cout << endl;
 		i++;
 	}
