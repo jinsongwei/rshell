@@ -31,9 +31,6 @@ void testString(char * test);
 void testArgv(char * test[]);
 //........................................
 
-//get commands from the userinput.
-void initialArgv();
-
 
 void help(int argc, char ** argv);
 
@@ -76,37 +73,24 @@ void freeArray(char ** array);
 //print nicely
 void print(char ** temp);
 
-
+/*
 int main(int argc, char **argv)
 {
  	initialArgv();
 	return 0;
 }
+*/
 
-void initialArgv()
-{
-	char * cmdString = new char[100];
-	char * argvNew[50];
-	cmdString = inputCommand();
-	cmdString = orgSpaces(cmdString);
-	parsingArgv(cmdString, argvNew);
-	int argcNew = 0;
-	while(argvNew[argcNew] != NULL)
-		argcNew++;
-        help(argcNew, argvNew);
 
-	initialArgv();	
-        
-}
- 
-void help(int argc, char ** argv)
+
+int main(int argc, char ** argv)
 {
  	char * files[200];
 	char * visibleFiles[100];
 	char c[2] = ".";
 	int flag = 0;
 	bool anotherPath= false;
-	if(strcmp(argv[0],"ls") == 0)
+	if(strcmp(argv[1],"ls") == 0)
 	{
 		for(int i = 1; i < argc; i++)
 		{
@@ -129,15 +113,15 @@ void help(int argc, char ** argv)
 				if(chdir(argv[i]) == -1)
 				{
 					perror("chdir");
-					initialArgv();
+					exit(1);
 				}
 				anotherPath = true;
 				path = argv[i];
 			}
-			else{
-				cerr << "no such argument "<< endl;
-				initialArgv();
-			}
+//			else{
+//				cerr << "no such argument "<< endl;
+//				exit(1);
+//			}
 		}
 		if(!anotherPath){
 			inDirectory(files, visibleFiles, c);
@@ -146,8 +130,8 @@ void help(int argc, char ** argv)
 	}
 	else
 	{
-		cerr << argv[0] <<": no such command in this shell " << endl;
-		initialArgv();
+		cerr << argv[1] <<": no such command in this shell " << endl;
+		exit(1);
 	}
 
 	switch (flag){
@@ -172,7 +156,7 @@ void help(int argc, char ** argv)
 			break;
 		default:
 			cerr << "wrong option" << endl;
-			initialArgv();
+			exit(1);
 			break;	
 			
 		
@@ -260,7 +244,7 @@ void inDirectory(char ** files, char ** visibleFiles, char * dirName)
 	if (dirp == NULL)
 	{
 		perror("opendir");
-		initialArgv();	
+		exit(1);	
 	}
 	dirent *direntp;
 	int index = 0;
@@ -318,7 +302,7 @@ void printInfoHelp(char *file)
 	if(stat(file, &statbuf) == -1)
 	{
 		perror("stat");
-		initialArgv();
+		exit(1);
 	}
 
 	if(S_ISDIR(statbuf.st_mode))
@@ -414,7 +398,7 @@ void printAllDirHelp(char *afile)
 	if(stat(afile, &buf) == -1)
 	{
 		perror("stat");
-		initialArgv();
+		exit(1);
 	}
 	else{
 		if(S_ISDIR(buf.st_mode))
@@ -444,7 +428,7 @@ void printAllDirHelp(char *afile)
 			if(chdir(afile) == -1)
 			{
 				perror(" ");
-				initialArgv();
+				exit(1);
 			}
 			if(is_a)
 				printAllDir(fAll);
@@ -454,7 +438,7 @@ void printAllDirHelp(char *afile)
 			if(chdir(currentDir) == -1)
 			{
 				perror(" ");
-				initialArgv();
+				exit(1);
 			}	
 			freeArray(fAll);
 			freeArray(fvisib);
