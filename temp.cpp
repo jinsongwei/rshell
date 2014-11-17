@@ -393,9 +393,14 @@ void pipeHelp3(char ** argvL, char ** argvR)
 	      perror("There was an error with dup2. ");
 	   if(-1 == close(fd[0]))
 	      perror("There was an error with close. ");
-		
-	   if(-1 == execvp(argvL[0], argvL)) 
-	      perror("There was an error in execvp. ");
+
+		char buf[BUFSIZ];
+		memset(buf, '\0', BUFSIZ);
+		if(-1 == read(pidFile,buf,BUFSIZ))
+			perror("read");
+		if(-1 == write(fd[1], buf, BUFSIZ))
+			perror("write");
+
 	   exit(1);  
 	}
 //parent:::
@@ -410,8 +415,7 @@ void pipeHelp3(char ** argvL, char ** argvR)
 	      perror("There was an error with close. ");
 	   if( -1 == wait(0)) 
 	      perror("There was an error with wait().");
-		if(!isFile)
-		{
+		
 			int fpid = fork();
 			if(fpid == 0)
 			{
@@ -431,21 +435,9 @@ void pipeHelp3(char ** argvL, char ** argvR)
 				if(-1 == wait(NULL))
 					perror("wait");
 			}
-		}
-
-		else	
-		{
-			char buf[BUFSIZ];
-			memset(buf, '\0', BUFSIZ);
-			if(-1 == read(pidFile,buf,BUFSIZ))
-				perror("read");
-			if(-1 == write(fd[1], buf, BUFSIZ))
-				perror("write");
-		}
-
-	}
-	if(-1 == dup2(pidFile,0))//restore stdin
-	   perror("There is an error with dup2. ");
+ 	}
+//	if(-1 == dup2(pidFile,0))//restore stdin
+//	   perror("There is an error with dup2. ");
 }
 
 bool isSymbol(char **argv)
