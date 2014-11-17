@@ -33,18 +33,7 @@ char * orgSpaces(char * cmd);
 //pass commands in temp to argvNew spearate by space.
 void parsingArgv(char * temp, char ** argvTemp);
 
-//execute commands
-void executeCmd(char ** argv);
-
-//fork a new process call execvp
-int execvpCall(char ** argv);
-	
-//this call is in execvpCall and add > < | feature in the program
-void execvpCallHelp(char ** argv);
-
-//check if contain symbols
-bool isSymbol(char **argv);
-
+void pipeCall(char ** argv);
 //clean memory
 void freeArgv(char ** temp);
 
@@ -64,32 +53,29 @@ void help()
 		cmdString = orgSymbol(cmdString);
 		cmdString = orgSpaces(cmdString);
 	       	parsingArgv(cmdString, argvNew);
-		executeCmd(argvNew);
-
+		
+	//	testArgv(argvNew);	
+		pipeCall(argvNew);
+		
 		delete [] cmdString;
 		cmdString = NULL;
 		freeArgv(argvNew);
-		help();	
+	//	help();
 }
 
 char * inputCommand()
 {
-	char *htname = new char[64];
-	if(gethostname(htname,64) == -1)
-	{
-		perror("gethostname");
-	}
 	char *temp = new char[100];
 	memset(temp, '\0', 100);
 	char c;
-	cout << "[rShell_"<< getlogin() <<"/"<< htname << "] $";
+	cout << "[rShell_] $";
 	while(c != EOF)
 	{
 		c = getchar();
 		if(c == '\n')
 		{
 	        	if(temp[0] == '\0')
- 				cout << "[rShell_"<< getlogin() << "/"<< htname <<"] $";
+ 				cout << "[rShell_] $";
 			else
 			{
                                 strncat(temp, "\0", 1);
@@ -189,128 +175,97 @@ void parsingArgv(char * temp, char ** argvTemp)
 	argvTemp[index] = NULL;
 }
 
-void executeCmd(char **argv)
+void pipeCall(char **argv)
 {
-	if(isSymbol(argv))
-	{	
-		int i = 0;
-		int j = 0;
-		int wait_pid;
-		char *subArgv[20];
-		while(argv[i] != NULL)
-		{
-	
-			if(strcmp(argv[i],";") == 0 || 
-				strcmp(argv[i],"&&") == 0 ||
-					strcmp(argv[i],"||") == 0)
-			{
-				subArgv[j] = NULL; 
-				wait_pid = execvpCall(subArgv);	
-				freeArgv(subArgv);
-				if((strcmp(argv[i],";") == 0 ||
-					strcmp(argv[i], "&&") == 0) && wait_pid != 0)
-				{	
-					freeArgv(subArgv);
-					stop = true;
-					break;	
-				}
-			//store left of commands
-				if(argv[i+1] != NULL){
-					int tempIndex = i + 1;
-					char *leftArgv[50];
-					int index = 0;
-					while(argv[tempIndex] != NULL)
-					{
-						leftArgv[index] = new char[strlen(argv[tempIndex])+ 1];
-						strcpy(leftArgv[index], argv[tempIndex]);
-						strncat(leftArgv[index],"\0", 1);
-						index++;
-						tempIndex++;
-					}	
-					leftArgv[index] = NULL;	
-					executeCmd(leftArgv);
-					freeArgv(leftArgv);
-					if(stop)
-						break;
-				}
-				else
-					break;
-			}
-			subArgv[j] = new char[strlen(argv[i]) + 1];
-			strcpy(subArgv[j], argv[i]);
-			strncat(subArgv[j], "\0", 1);
-			j++;
-			i++;
-		}
-	}	
-	else{
-		stop = true;
-		execvpCall(argv);
-	}
-}
-
-int execvpCall(char ** argv)
-{
-
-	if(argv[0] == NULL)
-	{
-		cerr << "wrong format of command "<< endl;
-		help();
-	}
-	if(strcmp(argv[0], "exit") == 0)
-		exit(0);
-//start insert > < | feature into program...................
-/*
+//separate by '|', passing two argv
+	char *argvL[10];
+	char *argvR[10];
 	int i = 0;
-	while(argv[i] != NULL)
+	int index = 0;
+	while(argv[i] != NULL && strcmp(argv[i],"|") != 0)	
 	{
-		if(strcmp(argv[i],">") == 0 || 
-			strcmp(argv[i],"<") == 0 ||
-				 strcmp(argv[i],"|") == 0)
-		{
-			execvpCallHelp(argv);
-			break;
-		}
+		argvL[i] = new char[strlen(argv[i])];
+		strcpy(argvL[i],argv[i]);
 		i++;
 	}
-*/
-//end > < | feature here ...................................
-	int wait_pid = 0;
-	int pid = fork();
-	if(pid == 0){
-		if(execvp(argv[0], argv) == -1)
-		{
-			perror(argv[0]);
-			exit(1);
-		}
-	}		
-	else if(pid == -1)
+	argvL[i] = NULL;
+	i++;
+	while(argv[i] != NULL)	
 	{
-		perror("fork");
-		exit(1);
-	}
-	else
-	{
-		if(waitpid(pid,&wait_pid,0) == -1)
-		{
-			perror("wait");	
-			exit(1);
-		}
-	}
-	return wait_pid;
-}
-void execvpCallHelp(char ** argv)
-{
-/*
-	int index = 0;
-	while(strcmp(argv[index],"<") != 0)
-	{
-		if()
+		argvR[index] = new char[strlen(argv[i])];
+		strcpy(argvR[index],argv[i]);
 		index++;
+		i++;
 	}
+	argvR[index] = NULL;	
+
+// start to piping, 
+
+	int fd[2];
+	if(pipe(fd) == -1)
+	   perror("There was an error with pipe(). ");
+
+	int pid = fork();
+	int savestdin;
+	if(pid == -1)
+	{
+	   perror("There was an error with fork(). ");
+	   exit(1);
+	}
+//child:::
+	else if(pid == 0)
+	{
+	   //write to the pipe
+	   if(-1 == dup2(fd[1],1))//make stdout the write end of the pipe 
+	      perror("There was an error with dup2. ");
+	   if(-1 == close(fd[0]))
+	      perror("There was an error with close. ");
+	   if(-1 == execvp(argvL[0], argvL)) 
+	      perror("There was an error in execvp. ");
+
+
+	   exit(1);  
+	}
+//parent:::
+	else if(pid > 0) //parent function
+	{
+	   //read end of the pipe
+//	   if(-1 == (savestdin = dup(0)))
+//	     perror("There is an error with dup. ");
+	   if(-1 == dup2(fd[0],0))//make stdin the read end of the pipe 
+	      perror("There was an error with dup2. ");
+	    if(-1 == close(fd[1]))
+	      perror("There was an error with close. ");
+	   if( -1 == wait(0)) 
+	      perror("There was an error with wait().");
+		int fpid = fork();
+		if(fpid == 0)
+		{
+			if(execvp(argvR[0], argvR) == -1)
+			{	
+				perror("execvp inside doesn't work properly");
+				exit(1);
+			}
+			exit(1);
+		}
+		else if(fpid == -1)
+		{
+			perror("fork fail");
+		}
+		else
+		{
+			if(-1 == wait(NULL))
+				perror("wait");
+		}
+	}
+	if(-1 == dup2(savestdin,0))//restore stdin
+	   perror("There is an error with dup2. ");
+
+	freeArgv(argvL);
+	freeArgv(argvR);
+
 }
-*/
-}
+
 bool isSymbol(char **argv)
 {
 	int i = 0;

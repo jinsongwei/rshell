@@ -81,14 +81,14 @@ void help()
 	Timer t;
 	double eTime;
 	//using fstream method 	
-	t.start();
-	getput(argv);
-	t.elapsedUserTime(eTime);
-	cout << eTime << endl;
+//	t.start();
+//	getput(argv);
+//	t.elapsedUserTime(eTime);
+//	cout << eTime << endl;
 
 	//using read and write one character at a time
 	t.start();
-	readWriteOne(argv);
+	readWriteBuf(argv);
 	t.elapsedUserTime(eTime);
 	cout << eTime << endl;
 
@@ -97,6 +97,8 @@ void help()
 //	readWriteBuf(argv);
 //	t.elapsedUserTime(eTime);
 //	cout << eTime << endl;
+
+//    
 
 
 
@@ -193,11 +195,11 @@ void getput(char ** argv)
 void readWriteOne(char ** argv)
 {
 
-	int fdi = open(argv[1], O_APPEND);
+	int fdi = open(argv[1], O_RDWR | O_APPEND);
 	char c[1];
 	memset(c,'\0',1);
 	int offset = -11;
-	int fdo = open(argv[2], O_APPEND | S_IRWXU);
+	int fdo = open(argv[2], O_APPEND | O_RDWR);
 
 	while(offset != 0)
 	{
@@ -230,7 +232,40 @@ void readWriteOne(char ** argv)
 
 void readWriteBuf(char ** argv)
 {
+
+	int fdi = open(argv[1], O_RDWR | O_APPEND);
+	char c[BUFSIZ];
+	memset(c,'\0',1);
+	int offset = -11;
+	int fdo = open(argv[2], O_APPEND | O_RDWR);
+
+	while(offset != 0)
+	{
+		offset = read(fdi, c, BUFSIZ);
+		if(offset == -1)
+		{
+			perror("read");
+			exit(1);
+		}	
+		
+		if(write(fdo, c, BUFSIZ) == -1)
+		{
+			perror("write");
+			exit(1);
+		}
+	}
 	
+	if(close(fdi) == -1)
+	{
+		perror("close");
+		exit(1);
+	}
+	
+	if(close(fdo) == -1)
+	{
+		perror("close");
+		exit(1);
+	}
 }
 
 void freeArray(char ** array)
