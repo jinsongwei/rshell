@@ -37,11 +37,17 @@ void parsingArgv(char * temp, char ** argvTemp);
 
 void pipeCall(char ** argv);
 
+//if there is more than one redirect call then spearate them with three 
+//argv, first two execute, and the rest argv waiting.
+void pipeSeperate(char ** argv, char **argvL, char **argvR, char argvC, char *symbol,char *symbolN);
+
 void pipeHelp1(char ** argvL, char ** argvR);
 
 void pipeHelp2(char ** argvL, char ** argvR);
 
 void pipeHelp3(char ** argvL, char ** argvR);
+
+bool isRedirect(char ** argv);
 //clean memory
 void freeArgv(char ** temp);
 
@@ -183,42 +189,82 @@ void parsingArgv(char * temp, char ** argvTemp)
 	argvTemp[index] = NULL;
 }
 
-void pipeCall(char **argv)
+void pipeSeperate(char **argv, char **argvL, char **argvR, char **argvC, char *symbol, char *symbolN)
 {
-//separate by '|', passing two argv
-	char *argvL[10];
-	char *argvR[10];
 	int i = 0;
 	int index = 0;
-	int j = 0;
+	if(isRedirect(argv))
+	{
+		//copy redirect symbol left side
+		while(argv[i] != NULL && strcmp(argv[i],"<") != 0 
+					&& strcmp(argv[i],">") != 0 
+					&& strcmp(argv[i],"|") != 0)	
+		{
+			argvL[i] = new char[strlen(argv[i])];
+			strncpy(argvL[i],argv[i],strlen(argv[i]));
+			i++;
+		}
+		argvL[i] = NULL;
+		strcpy(symbol,argv[i]);
+		i++;
+		//copy redirect symbol right side
+		while(argv[i] != NULL && strcmp(argv[i],"<") != 0 &&
+				strcmp(argv[i],">") != 0 &&
+					strcmp(argv[i],"|") != 0)	
+		{
+			argvR[index] = new char[strlen(argv[i])];
+			strcpy(argvR[index],argv[i]);
+			index++;
+			i++;
+		}
+		argvR[index] = NULL;	
+	}
+	index = 0;
+	if(argv[i] != NULL)
+	{
+		strcpy(symbolN,argv[i]);
+		i++;
+		while(argv[i] != NULL)	
+		{
+			argvC[index] = new char[strlen(argv[i])];
+			strcpy(argvC[index],argv[i]);
+			index++;
+			i++;
+		}
+	}
+	else
+		argvC[0] = NULL;
+}
+
+void pipeCall(char **argv)
+{
+//separate by '| < >', passing two argv
+	char *argvL[10];
+	char *argvR[10];
+	char *argvContinue[20];
+	char *symbolRedirect = new char[10];
+	char *symbolNext = new char[10];
+	memset(symbolRedirect,'\0',10);
+	memset(symbolNext,'\0',10);
+
+	pipeSeperate(argv, argvL,argvR,argvContinue,symbolRedirect,symbolNext);	
 /*
-	while(argv[j] != NULL)
-	{
-		if(strcmp(argv[i],"|") == 0)
-			
-		j++;
-	}
+	testArgv(argvL);
+	testArgv(argvR);
+	testArgv(argvContinue);
+	testString(symbolRedirect);
+	testString(symbolNext);
 */
-	while(argv[i] != NULL && strcmp(argv[i],"<") != 0)	
-	{
-		argvL[i] = new char[strlen(argv[i])];
-		strcpy(argvL[i],argv[i]);
-		i++;
-	}
-	argvL[i] = NULL;
-	i++;
-	while(argv[i] != NULL)	
-	{
-		argvR[index] = new char[strlen(argv[i])];
-		strcpy(argvR[index],argv[i]);
-		index++;
-		i++;
-	}
-	argvR[index] = NULL;	
+	if(strcmp(symbolRedirect,"|") == 0)
+		pipeHelp1(argvL,argvR);
+	else if(strcmp(symbolRedirect,">") == 0)
+		pipeHelp2(argvL,argvR);
+	else if(strcmp(symbolRedirect,"<") == 0)
+		pipeHelp3(argvL,argvR);	
+
 
 // start to piping, 
-	pipeHelp3(argvL, argvR);
-
+	freeArgv(argvContinue);
 	freeArgv(argvL);
 	freeArgv(argvR);
 
@@ -266,7 +312,9 @@ void pipeHelp1(char ** argvL, char ** argvR)
 		int fpid = fork();
 		if(fpid == 0)
 		{
-			if(execvp(argvR[0], argvR) == -1)
+			if(isRedirect(argvR))
+				pipeCall(argvR);
+			else if(execvp(argvR[0], argvR) == -1)
 			{	
 				perror("execvp inside doesn't work properly");
 				exit(1);
@@ -335,7 +383,9 @@ void pipeHelp2(char **argvL, char ** argvR)
 			int fpid = fork();
 			if(fpid == 0)
 			{
-				if(execvp(argvR[0], argvR) == -1)
+				if(isRedirect(argvR))
+					pipeCall(argvR);
+				else if(execvp(argvR[0], argvR) == -1)
 				{	
 					perror("execvp inside doesn't work properly");
 					exit(1);
@@ -389,18 +439,21 @@ void pipeHelp3(char ** argvL, char ** argvR)
 	else if(pid == 0)
 	{
 	   //write to the pipe
-	   if(-1 == dup2(fd[1],1))//make pidFile the write end of the pipe 
-	      perror("There was an error with dup2. ");
-	   if(-1 == close(fd[0]))
-	      perror("There was an error with close. ");
+		if(-1 == dup2(fd[1],1))//make pidFile the write end of the pipe 
+			perror("There was an error with dup2. ");
+		if(-1 == close(fd[0]))
+			perror("There was an error with close. ");
 
-		char buf[BUFSIZ];
-		memset(buf, '\0', BUFSIZ);
-		if(-1 == read(pidFile,buf,BUFSIZ))
-			perror("read");
-		if(-1 == write(fd[1], buf, BUFSIZ))
-			perror("write");
-
+		if(isRedirect(argvR))
+				pipeCall(argvR);
+		else{
+			char buf[BUFSIZ];
+			memset(buf, '\0', BUFSIZ);
+			if(-1 == read(pidFile,buf,BUFSIZ))
+				perror("read");
+			if(-1 == write(fd[1], buf, BUFSIZ))
+				perror("write");
+		}
 	   exit(1);  
 	}
 //parent:::
@@ -465,7 +518,20 @@ void freeArgv(char ** temp)
 	}
 }
 
-
+bool isRedirect(char ** argv)
+{
+	int i = 0;
+	while(argv[i] != NULL)
+	{
+		if(strcmp(argv[i],"<") == 0 ||
+			strcmp(argv[i],">") == 0 ||
+				strcmp(argv[i],"|") == 0)
+			return true;
+		i++;
+	}
+	return false;
+	
+}
 //......................................................
 //this is testing funciton nothing contribute to main program
 void testString(char * test)
