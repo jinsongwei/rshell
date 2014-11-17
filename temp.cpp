@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <iomanip>
 #include <iostream>
 #include <string.h>
@@ -34,6 +36,12 @@ char * orgSpaces(char * cmd);
 void parsingArgv(char * temp, char ** argvTemp);
 
 void pipeCall(char ** argv);
+
+void pipeHelp1(char ** argvL, char ** argvR);
+
+void pipeHelp2(char ** argvL, char ** argvR);
+
+void pipeHelp3(char ** argvL, char ** argvR);
 //clean memory
 void freeArgv(char ** temp);
 
@@ -182,7 +190,16 @@ void pipeCall(char **argv)
 	char *argvR[10];
 	int i = 0;
 	int index = 0;
-	while(argv[i] != NULL && strcmp(argv[i],"|") != 0)	
+	int j = 0;
+/*
+	while(argv[j] != NULL)
+	{
+		if(strcmp(argv[i],"|") == 0)
+			
+		j++;
+	}
+*/
+	while(argv[i] != NULL && strcmp(argv[i],"<") != 0)	
 	{
 		argvL[i] = new char[strlen(argv[i])];
 		strcpy(argvL[i],argv[i]);
@@ -200,7 +217,15 @@ void pipeCall(char **argv)
 	argvR[index] = NULL;	
 
 // start to piping, 
+	pipeHelp3(argvL, argvR);
 
+	freeArgv(argvL);
+	freeArgv(argvR);
+
+}
+
+void pipeHelp1(char ** argvL, char ** argvR)
+{
 	int fd[2];
 	if(pipe(fd) == -1)
 	   perror("There was an error with pipe(). ");
@@ -261,9 +286,166 @@ void pipeCall(char **argv)
 	if(-1 == dup2(savestdin,0))//restore stdin
 	   perror("There is an error with dup2. ");
 
-	freeArgv(argvL);
-	freeArgv(argvR);
 
+}
+
+void pipeHelp2(char **argvL, char ** argvR)
+{
+	int fd[2];
+	if(pipe(fd) == -1)
+	   perror("There was an error with pipe(). ");
+	bool isFile = false;
+	
+	int pidFile;
+	pidFile = open(argvR[0], O_RDWR);
+	if(pidFile != -1)	
+		isFile = true;
+	int pid = fork();
+	if(pid == -1)
+	{
+	   perror("There was an error with fork(). ");
+	   exit(1);
+	}
+//child:::
+	else if(pid == 0)
+	{
+	   //write to the pipe
+	   if(-1 == dup2(fd[1],1))//make pidFile the write end of the pipe 
+	      perror("There was an error with dup2. ");
+	   if(-1 == close(fd[0]))
+	      perror("There was an error with close. ");
+	   if(-1 == execvp(argvL[0], argvL)) 
+	      perror("There was an error in execvp. ");
+	   exit(1);  
+	}
+//parent:::
+	else if(pid > 0) //parent function
+	{
+	   //read end of the pipe
+//	   if(-1 == (savestdin = dup(0)))
+//	     perror("There is an error with dup. ");
+	   if(-1 == dup2(fd[0],0))//make stdin the read end of the pipe 
+	      perror("There was an error with dup2. ");
+	    if(-1 == close(fd[1]))
+	      perror("There was an error with close. ");
+	   if( -1 == wait(0)) 
+	      perror("There was an error with wait().");
+		if(!isFile)
+		{
+			int fpid = fork();
+			if(fpid == 0)
+			{
+				if(execvp(argvR[0], argvR) == -1)
+				{	
+					perror("execvp inside doesn't work properly");
+					exit(1);
+				}
+				exit(1);
+			}
+			else if(fpid == -1)
+			{
+				perror("fork fail");
+			}
+			else
+			{
+				if(-1 == wait(NULL))
+					perror("wait");
+			}
+		}
+
+		else	
+		{
+			char buf[BUFSIZ];
+			memset(buf, '\0', BUFSIZ);
+			if(-1 == read(fd[0],buf,BUFSIZ))
+				perror("read");
+			if(-1 == write(pidFile, buf, BUFSIZ))
+				perror("write");
+		}
+
+	}
+	if(-1 == dup2(pidFile,0))//restore stdin
+	   perror("There is an error with dup2. ");
+}
+
+void pipeHelp3(char ** argvL, char ** argvR)
+{
+	int fd[2];
+	if(pipe(fd) == -1)
+	   perror("There was an error with pipe(). ");
+	bool isFile = false;
+	
+	int pidFile;
+	pidFile = open(argvR[0], O_RDWR);
+	if(pidFile != -1)	
+		isFile = true;
+	int pid = fork();
+	if(pid == -1)
+	{
+	   perror("There was an error with fork(). ");
+	   exit(1);
+	}
+//child:::
+	else if(pid == 0)
+	{
+	   //write to the pipe
+	   if(-1 == dup2(fd[1],1))//make pidFile the write end of the pipe 
+	      perror("There was an error with dup2. ");
+	   if(-1 == close(fd[0]))
+	      perror("There was an error with close. ");
+		
+	   if(-1 == execvp(argvL[0], argvL)) 
+	      perror("There was an error in execvp. ");
+	   exit(1);  
+	}
+//parent:::
+	else if(pid > 0) //parent function
+	{
+	   //read end of the pipe
+//	   if(-1 == (savestdin = dup(0)))
+//	     perror("There is an error with dup. ");
+	   if(-1 == dup2(fd[0],0))//make stdin the read end of the pipe 
+	      perror("There was an error with dup2. ");
+	    if(-1 == close(fd[1]))
+	      perror("There was an error with close. ");
+	   if( -1 == wait(0)) 
+	      perror("There was an error with wait().");
+		if(!isFile)
+		{
+			int fpid = fork();
+			if(fpid == 0)
+			{
+				if(execvp(argvL[0], argvL) == -1)
+				{	
+					perror("execvp inside doesn't work properly");
+					exit(1);
+				}
+				exit(1);
+			}
+			else if(fpid == -1)
+			{
+				perror("fork fail");
+			}
+			else
+			{
+				if(-1 == wait(NULL))
+					perror("wait");
+			}
+		}
+
+		else	
+		{
+			char buf[BUFSIZ];
+			memset(buf, '\0', BUFSIZ);
+			if(-1 == read(pidFile,buf,BUFSIZ))
+				perror("read");
+			if(-1 == write(fd[1], buf, BUFSIZ))
+				perror("write");
+		}
+
+	}
+	if(-1 == dup2(pidFile,0))//restore stdin
+	   perror("There is an error with dup2. ");
 }
 
 bool isSymbol(char **argv)
