@@ -49,13 +49,20 @@ void pipeCall(char ** argv);
 //argv, first two execute, and the rest argv waiting.
 void pipeSeperate(char ** argv, char **argvL, char **argvR, char *symbol);
 
+//for |
 void pipeHelp1(char ** argvL, char ** argvR);
 
+//for >
 void pipeHelp2(char ** argvL, char ** argvR);
 
+//for <
 void pipeHelp3(char ** argvL, char ** argvR);
 
+//for <<< 
+void pipeHelp4(char ** argvL, char ** argvR);
+
 bool isRedirect(char ** argv);
+
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //check if contain symbols
@@ -101,8 +108,6 @@ char * inputCommand()
 	cout << "[rShell_"<< getlogin() <<"/"<< htname << "] $";
 	while(c != EOF)
 	{
-	//test
-	cout << "++++++++" << endl;
 		c = getchar();
 		if(c == '\n')
 		{
@@ -151,7 +156,14 @@ char * orgSymbol(char *temp)
 		}
 		else if(temp[i] == '<')
 		{
-			strncat(newString, " < ", 3);
+			if(temp[i+1] != '<')
+				strncat(newString, " < ", 3);
+			else if(temp[i+1] == '<' && temp[i+2] == '<')
+			{
+				 	strncat(newString, " <<< ", 5);
+					i++;
+					i++;
+			}	
 		}
 		else if(temp[i] == '#')
 		{
@@ -308,9 +320,7 @@ int execvpCall(char ** argv)
 	}
 }
 
-
-
-
+//start piping >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 {
 	int i = 0;
@@ -321,7 +331,8 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 	i--;	
 	while(i >= 0)
 	{
-		if(strcmp(argv[i],"<") == 0 || strcmp(argv[i],">") == 0 || strcmp(argv[i],"|") == 0)
+		if(strcmp(argv[i],"<") == 0 || strcmp(argv[i],">") == 0 || 
+				strcmp(argv[i],"|") == 0 || strcmp(argv[i],"<<<") == 0)
 		{
 			strcpy(symbol, argv[i]);
 			j = i;
@@ -330,6 +341,7 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 			{
 				//copy redirect symbol right side.
 				argvR[index] = new char[strlen(argv[i])];
+				memset(argvR[index],'\0',strlen(argvR[index]));
 				strncpy(argvR[index],argv[i],strlen(argv[i]));
 				index++;
 				i++;
@@ -343,6 +355,7 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 	while(i != j)
 	{
 		argvL[i] = new char[strlen(argv[i])];
+		memset(argvL[i],'\0',strlen(argvL[i]));
 		strncpy(argvL[i],argv[i], strlen(argv[i]));
 		i++;
 	}
@@ -351,7 +364,6 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 
 void pipeCall(char **argv)
 {
-//separate by '| < >', passing two argv
 	char *argvL[50];
 	char *argvR[50];
 	char *symbolRedirect = new char[10];
@@ -371,12 +383,15 @@ void pipeCall(char **argv)
 	else if(strcmp(symbolRedirect,">") == 0)
 		pipeHelp2(argvL,argvR);
 	else if(strcmp(symbolRedirect,"<") == 0)
-		pipeHelp3(argvL,argvR);	
-
+		pipeHelp3(argvL,argvR);
+	else if(strcmp(symbolRedirect,"<<<") == 0)
+		pipeHelp4(argvL,argvR);	
+ 
 	freeArgv(argvL);
 	freeArgv(argvR);
 	delete [] symbolRedirect;
 	symbolRedirect = NULL;
+
 }
 
 void pipeHelp1(char ** argvL, char ** argvR)
@@ -388,7 +403,6 @@ void pipeHelp1(char ** argvL, char ** argvR)
 	   perror("There was an error with pipe(). ");
 
 	int pid = fork();
-	int savestdin;
 	if(pid == -1)
 	{
 	   perror("There was an error with fork(). ");
@@ -397,8 +411,7 @@ void pipeHelp1(char ** argvL, char ** argvR)
 //child:::
 	else if(pid == 0)
 	{
-	   //write to the pipe
-	   if(-1 == dup2(fd[1],1))//make stdout the write end of the pipe 
+	   if(-1 == dup2(fd[1],1))
 	      perror("There was an error with dup2. ");
 	   if(-1 == close(fd[0]))
 	      perror("There was an error with close. ");
@@ -409,11 +422,14 @@ void pipeHelp1(char ** argvL, char ** argvR)
 	   else if(-1 == execvp(argvL[0], argvL)) 
 	      perror("There was an error in execvp. ");
 
-	   exit(1);  
+	   exit(0);  
 	}
 //parent:::
 	else if(pid > 0) //parent function
 	{
+	   int savestdin;
+	   if(-1 == (savestdin = dup(0)))
+		perror("wrong with calling dup");
 	   //read end of the pipe
 //	   if(-1 == (savestdin = dup(0)))
 //	     perror("There is an error with dup. ");
@@ -431,7 +447,7 @@ void pipeHelp1(char ** argvL, char ** argvR)
 				perror("execvp inside doesn't work properly");
 				exit(1);
 			}
-			exit(1);
+			exit(0);
 		}
 		else if(fpid == -1)
 		{
@@ -442,12 +458,11 @@ void pipeHelp1(char ** argvL, char ** argvR)
 			if(-1 == wait(NULL))
 				perror("wait");
 		}
-	}
-	
-	if(-1 == dup2(savestdin,0))//restore stdin
+	   if(-1 == dup2(savestdin,0))//restore stdin
 	   perror("There is an error with dup2. ");
 
-
+	}
+	
 }
 
 void pipeHelp2(char **argvL, char ** argvR)
@@ -481,11 +496,14 @@ void pipeHelp2(char **argvL, char ** argvR)
 		}
 		else if(-1 == execvp(argvL[0], argvL)) 
 			perror("There was an error in execvp. ");
-	   exit(1);  
+	   exit(0);  
 	}
 //parent:::
 	else if(pid > 0) //parent function
 	{
+	   int savestdin;
+	   if(-1 == (savestdin = dup(0)))
+		perror("wrong with dup");
 	   //read end of the pipe
 //	   if(-1 == (savestdin = dup(0)))
 //	     perror("There is an error with dup. ");
@@ -505,7 +523,7 @@ void pipeHelp2(char **argvL, char ** argvR)
 					perror("execvp inside doesn't work properly");
 					exit(1);
 				}
-				exit(1);
+				exit(0);
 			}
 			else if(fpid == -1)
 			{
@@ -527,10 +545,11 @@ void pipeHelp2(char **argvL, char ** argvR)
 			if(-1 == write(pidFile, buf, BUFSIZ))
 				perror("write");
 		}
-
+	   	if(-1 == dup2(savestdin,0))
+			perror("wrong with calling dup");
 	}
-	if(-1 == dup2(pidFile,0))//restore stdin
-	   perror("There is an error with dup2. ");
+	if(-1 == close(pidFile))
+	   perror("there was wrong closing pidFile");
 }
 
 void pipeHelp3(char ** argvL, char ** argvR)
@@ -570,6 +589,9 @@ void pipeHelp3(char ** argvL, char ** argvR)
 //parent:::
 	else if(pid > 0) //parent function
 	{
+	   int savestdin;
+	   if(-1 == (savestdin = dup(0)))
+		perror("worng with dup");
 	   //read end of the pipe
 //	   if(-1 == (savestdin = dup(0)))
 //	     perror("There is an error with dup. ");
@@ -591,7 +613,7 @@ void pipeHelp3(char ** argvL, char ** argvR)
 				perror("execvp inside doesn't work properly");
 				exit(1);
 			}
-			exit(1);
+			exit(0);
 		}
 		else if(fpid == -1)
 		{
@@ -603,11 +625,103 @@ void pipeHelp3(char ** argvL, char ** argvR)
 				perror("wait");
 		}
 	    }
+		if(-1 == dup2(savestdin,0))
+			perror("wrong with calling dup");
  	}
-//	if(-1 == dup2(pidFile,0))//restore stdin
-//	   perror("There is an error with dup2. ");
 }
 
+
+void pipeHelp4(char ** argvL, char ** argvR)
+{
+	int fd[2];
+	
+	if(pipe(fd) == -1)
+	   perror("There was an error with pipe(). ");
+	int pid = fork();
+	if(pid == -1)
+	{
+	   perror("There was an error with fork(). ");
+	   exit(1);
+	}
+	
+//child:::
+	else if(pid == 0)
+	{
+	   //write to the pipe
+		if(-1 == dup2(fd[1],1))  //write stdout
+			perror("There was an error with dup2. ");
+		if(-1 == close(fd[0]))
+			perror("There was an error with close. ");
+
+		int i = 0;
+		int size = 0;
+		while(argvR[i] != NULL)
+		{
+			size += strlen(argvR[i]) + 1;
+			i++;
+		}
+		size++;
+		size++;
+		char *buf = new char[size];
+		memset(buf, '\0', size);
+		i = 0;	
+		while(argvR[i] != NULL)
+		{
+			strcat(buf, argvR[i]);
+			strncat(buf, " ",1);
+			i++;
+		}
+		strncat(buf, "\n", 1);
+		strncat(buf, "\0", 1);
+		if(-1 == write(fd[1], buf, size))
+			perror("write");
+		delete [] buf;
+		buf = NULL;
+	   exit(0);  
+	}
+//parent:::
+	else if(pid > 0) //parent function
+	{
+	   int savestdin;
+	   if(-1 == (savestdin = dup(0)))
+		perror("call dup fail");
+	   //read end of the pipe
+//	   if(-1 == (savestdin = dup(0)))
+//	     perror("There is an error with dup. ");
+	   if(-1 == dup2(fd[0],0))//make stdin the read end of the pipe 
+	      perror("There was an error with dup2. ");
+	   if(-1 == close(fd[1]))
+	      perror("There was an error with close. ");
+	   if( -1 == wait(0)) 
+	      perror("There was an error with wait().");
+	   if(isRedirect(argvL))
+		pipeCall(argvL);		
+	   else
+	   {
+		int fpid = fork();
+		if(fpid == 0)
+		{
+			if(execvp(argvL[0], argvL) == -1)
+			{	
+				perror("execvp inside doesn't work properly");
+				exit(1);
+			}
+			exit(0);
+		}
+		else if(fpid == -1)
+		{
+			perror("fork fail");
+		}
+		else
+		{
+			if(-1 == wait(NULL))
+				perror("wait");
+		}
+	    }
+	    if(-1 == dup2(savestdin,0))
+		perror("call dup fail");
+ 	}
+}
 
 bool isRedirect(char ** argv)
 {
@@ -616,13 +730,15 @@ bool isRedirect(char ** argv)
 	{
 		if(strcmp(argv[i],"<") == 0 ||
 			strcmp(argv[i],">") == 0 ||
-				strcmp(argv[i],"|") == 0)
+				strcmp(argv[i],"|") == 0 ||
+					strcmp(argv[i],"<<<") == 0)
 			return true;
 		i++;
 	}
 	return false;
 	
 }
+
 
 bool isSymbol(char **argv)
 {
