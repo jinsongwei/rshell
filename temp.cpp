@@ -81,7 +81,7 @@ void help()
 		delete [] cmdString;
 		cmdString = NULL;
 		freeArgv(argvNew);
-
+		help();
 //	char c;
 //		while((c=getchar()) != '\n' && c != EOF);
 }
@@ -229,6 +229,7 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 			{
 				//copy redirect symbol right side.
 				argvR[index] = new char[strlen(argv[i])];
+				memset(argvR[index],'\0',strlen(argvR[index]));
 				strncpy(argvR[index],argv[i],strlen(argv[i]));
 				index++;
 				i++;
@@ -242,6 +243,7 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 	while(i != j)
 	{
 		argvL[i] = new char[strlen(argv[i])];
+		memset(argvL[i],'\0',strlen(argvL[i]));
 		strncpy(argvL[i],argv[i], strlen(argv[i]));
 		i++;
 	}
@@ -289,7 +291,6 @@ void pipeHelp1(char ** argvL, char ** argvR)
 	   perror("There was an error with pipe(). ");
 
 	int pid = fork();
-	int savestdin;
 	if(pid == -1)
 	{
 	   perror("There was an error with fork(). ");
@@ -298,8 +299,7 @@ void pipeHelp1(char ** argvL, char ** argvR)
 //child:::
 	else if(pid == 0)
 	{
-	   //write to the pipe
-	   if(-1 == dup2(fd[1],1))//make stdout the write end of the pipe 
+	   if(-1 == dup2(fd[1],1))
 	      perror("There was an error with dup2. ");
 	   if(-1 == close(fd[0]))
 	      perror("There was an error with close. ");
@@ -315,6 +315,9 @@ void pipeHelp1(char ** argvL, char ** argvR)
 //parent:::
 	else if(pid > 0) //parent function
 	{
+	   int savestdin;
+	   if(-1 == (savestdin = dup(0)))
+		perror("wrong with calling dup");
 	   //read end of the pipe
 //	   if(-1 == (savestdin = dup(0)))
 //	     perror("There is an error with dup. ");
@@ -343,20 +346,11 @@ void pipeHelp1(char ** argvL, char ** argvR)
 			if(-1 == wait(NULL))
 				perror("wait");
 		}
+	   if(-1 == dup2(savestdin,0))//restore stdin
+	   perror("There is an error with dup2. ");
+
 	}
 	
-	if(-1 == dup2(savestdin,0))//restore stdin
-	   perror("There is an error with dup2. ");
-/*
-	if(-1 == close(fd[0]))
-		perror("");
-	if(-1 == close(fd[1]))
-		perror("");
-	if(-1 == close(1))
-		perror("");
-	if(-1 == close(0))
-		perror("");
-*/
 }
 
 void pipeHelp2(char **argvL, char ** argvR)
@@ -395,6 +389,9 @@ void pipeHelp2(char **argvL, char ** argvR)
 //parent:::
 	else if(pid > 0) //parent function
 	{
+	   int savestdin;
+	   if(-1 == (savestdin = dup(0)))
+		perror("wrong with dup");
 	   //read end of the pipe
 //	   if(-1 == (savestdin = dup(0)))
 //	     perror("There is an error with dup. ");
@@ -436,9 +433,9 @@ void pipeHelp2(char **argvL, char ** argvR)
 			if(-1 == write(pidFile, buf, BUFSIZ))
 				perror("write");
 		}
+	   	if(-1 == dup2(savestdin,0))
+			perror("wrong with calling dup");
 	}
-	if(-1 == dup2(pidFile,0))//restore stdin
-	   perror("There is an error with dup2. ");
 	if(-1 == close(pidFile))
 	   perror("there was wrong closing pidFile");
 }
@@ -480,6 +477,9 @@ void pipeHelp3(char ** argvL, char ** argvR)
 //parent:::
 	else if(pid > 0) //parent function
 	{
+	   int savestdin;
+	   if(-1 == (savestdin = dup(0)))
+		perror("worng with dup");
 	   //read end of the pipe
 //	   if(-1 == (savestdin = dup(0)))
 //	     perror("There is an error with dup. ");
@@ -513,9 +513,9 @@ void pipeHelp3(char ** argvL, char ** argvR)
 				perror("wait");
 		}
 	    }
+		if(-1 == dup2(savestdin,0))
+			perror("wrong with calling dup");
  	}
-	if(-1 == dup2(pidFile,0))//restore stdin
-	   perror("There is an error with dup2. ");
 }
 
 
