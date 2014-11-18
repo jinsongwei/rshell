@@ -292,9 +292,11 @@ void executeCmd(char **argv)
 
 int execvpCall(char ** argv)
 {
+	int wait_pid = 0;
 	if(isRedirect(argv))
 	{
 		pipeCall(argv);
+		return wait_pid;
 	}
 	else
 	{
@@ -305,7 +307,6 @@ int execvpCall(char ** argv)
 		}
 		if(strcmp(argv[0], "exit") == 0)
 			exit(0);
-		int wait_pid = 0;
 		int pid = fork();
 		if(pid == 0){
 			if(execvp(argv[0], argv) == -1)
@@ -573,12 +574,11 @@ void pipeHelp3(char ** argvL, char ** argvR)
 	int fd[2];
 	if(pipe(fd) == -1)
 	   perror("There was an error with pipe(). ");
-	bool isFile = false;
 	
 	int pidFile;
 	pidFile = open(argvR[0], O_RDWR);
-	if(pidFile != -1)	
-		isFile = true;
+	if(pidFile == -1)
+		perror("open");
 	int pid = fork();
 	if(pid == -1)
 	{
