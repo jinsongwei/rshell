@@ -61,6 +61,9 @@ void pipeHelp3(char ** argvL, char ** argvR);
 //for <<< 
 void pipeHelp4(char ** argvL, char ** argvR);
 
+//for 2>
+void pipeHelp5(char ** argvL, char ** argvR);
+
 bool isRedirect(char ** argv);
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -163,11 +166,19 @@ char * orgSymbol(char *temp)
 				 	strncat(newString, " <<< ", 5);
 					i++;
 					i++;
-			}	
+			}
 		}
 		else if(temp[i] == '#')
 		{
 			strncat(newString, " # ", 3);
+		}
+		else if(temp[i] == '2')
+		{
+			if(temp[i+1] == '>')
+			{
+				strncat(newString, " 2> ",4);
+				i++;
+			}
 		}
 		else 
 			strncat(newString, &temp[i],1);
@@ -331,8 +342,11 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 	i--;	
 	while(i >= 0)
 	{
-		if(strcmp(argv[i],"<") == 0 || strcmp(argv[i],">") == 0 || 
-				strcmp(argv[i],"|") == 0 || strcmp(argv[i],"<<<") == 0)
+		if(strcmp(argv[i],"<") == 0 || 
+			strcmp(argv[i],">") == 0 || 
+				strcmp(argv[i],"|") == 0 || 
+				strcmp(argv[i],"<<<") == 0 ||
+				strcmp(argv[i],"2>") == 0)
 		{
 			strcpy(symbol, argv[i]);
 			j = i;
@@ -386,7 +400,9 @@ void pipeCall(char **argv)
 		pipeHelp3(argvL,argvR);
 	else if(strcmp(symbolRedirect,"<<<") == 0)
 		pipeHelp4(argvL,argvR);	
- 
+	else if(strcmp(symbolRedirect,"2>") == 0)
+		pipeHelp5(argvL,argvR);
+
 	freeArgv(argvL);
 	freeArgv(argvR);
 	delete [] symbolRedirect;
@@ -723,6 +739,98 @@ void pipeHelp4(char ** argvL, char ** argvR)
  	}
 }
 
+
+void pipeHelp5(char ** argvL, char ** argvR)
+{
+
+	int fd[2];
+	if(pipe(fd) == -1)
+	   perror("There was an error with pipe(). ");
+	bool isFile = false;
+	
+	int pidFile;
+	pidFile = open(argvR[0], O_RDWR);
+	if(pidFile != -1)	
+		isFile = true;
+	int pid = fork();
+	if(pid == -1)
+	{
+	   perror("There was an error with fork(). ");
+	   exit(1);
+	}
+//child:::
+	else if(pid == 0)
+	{
+	   //write to the pipe
+		if(-1 == dup2(fd[1],2))//make pidFile the write end of the pipe 
+	   		perror("There was an error with dup2. ");
+		if(-1 == close(fd[0]))
+		   	perror("There was an error with close. ");
+		if(isRedirect(argvL))
+		{
+			pipeCall(argvL);
+		}
+		else if(-1 == execvp(argvL[0], argvL)) 
+			perror("There was an error in execvp. ");
+	   exit(0);  
+	}
+//parent:::
+	else if(pid > 0) //parent function
+	{
+	   int savestdin;
+	   if(-1 == (savestdin = dup(0)))
+		perror("wrong with dup");
+	   //read end of the pipe
+//	   if(-1 == (savestdin = dup(0)))
+//	     perror("There is an error with dup. ");
+	   if(-1 == dup2(fd[0],0))//make stdin the read end of the pipe 
+	      perror("There was an error with dup2. ");
+	    if(-1 == close(fd[1]))
+	      perror("There was an error with close. ");
+	   if( -1 == wait(0)) 
+	      perror("There was an error with wait().");
+		if(!isFile)
+		{
+			int fpid = fork();
+			if(fpid == 0)
+			{
+				if(execvp(argvR[0], argvR) == -1)
+				{	
+					perror("execvp inside doesn't work properly");
+					exit(1);
+				}
+				exit(0);
+			}
+			else if(fpid == -1)
+			{
+				perror("fork fail");
+			}
+			else
+			{
+				if(-1 == wait(NULL))
+					perror("wait");
+			}
+		}
+
+		else	
+		{
+			char buf[BUFSIZ];
+			memset(buf, '\0', BUFSIZ);
+			if(-1 == read(fd[0],buf,BUFSIZ))
+				perror("read");
+			if(-1 == write(pidFile, buf, BUFSIZ))
+				perror("write");
+		}
+	   	if(-1 == dup2(savestdin,0))
+			perror("wrong with calling dup");
+	}
+	if(-1 == close(pidFile))
+	   perror("there was wrong closing pidFile");
+
+}
+
+
+
 bool isRedirect(char ** argv)
 {
 	int i = 0;
@@ -731,7 +839,9 @@ bool isRedirect(char ** argv)
 		if(strcmp(argv[i],"<") == 0 ||
 			strcmp(argv[i],">") == 0 ||
 				strcmp(argv[i],"|") == 0 ||
-					strcmp(argv[i],"<<<") == 0)
+					strcmp(argv[i],"<<<") == 0 ||
+					strcmp(argv[i],"2>") == 0)
+	
 			return true;
 		i++;
 	}
