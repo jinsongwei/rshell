@@ -153,9 +153,15 @@ char * orgSymbol(char *temp)
 		{
 			strncat(newString, " | ", 3);
 		}
-		else if(temp[i] == '>')
+		else if(temp[i] == '>' )
 		{
-			strncat(newString, " > ", 3);
+			if(temp[i+1] == '>')
+			{
+				strncat(newString, " > ",3);
+				i++;
+			}
+			else
+				strncat(newString, " > ", 3);
 		}
 		else if(temp[i] == '<')
 		{
@@ -176,8 +182,16 @@ char * orgSymbol(char *temp)
 		{
 			if(temp[i+1] == '>')
 			{
-				strncat(newString, " 2> ",4);
-				i++;
+				if(temp[i+2] == '>')
+				{
+					strncat(newString, " 2> ",4);
+					i += 2;
+				}
+				else 
+				{
+					strncat(newString, " 2> ",4);
+					i++;
+				}
 			}
 		}
 		else 
@@ -391,8 +405,8 @@ void pipeCall(char **argv)
 	cout << "right side >>>>>" << endl;
 	testArgv(argvR);
 	testString(symbolRedirect);
-*/
 
+*/
 	if(strcmp(symbolRedirect,"|") == 0)
 		pipeHelp1(argvL,argvR);
 	else if(strcmp(symbolRedirect,">") == 0)
