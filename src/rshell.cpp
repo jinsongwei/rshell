@@ -402,14 +402,14 @@ void pipeCall(char **argv)
 	memset(symbolRedirect,'\0',10);
 	
 	pipeSeperate(argv, argvL,argvR,symbolRedirect);	
-
+/*
 	cout << " left side <<<<<" << endl;
 	testArgv(argvL);
 	cout << "right side >>>>>" << endl;
 	testArgv(argvR);
 	testString(symbolRedirect);
+*/
 
-/*
 	if(strcmp(symbolRedirect,"|") == 0)
 		pipeHelp1(argvL,argvR);
 	else if(strcmp(symbolRedirect,">") == 0)
@@ -420,7 +420,7 @@ void pipeCall(char **argv)
 		pipeHelp4(argvL,argvR);	
 	else if(strcmp(symbolRedirect,"2>") == 0)
 		pipeHelp5(argvL,argvR);
-*/
+
 	freeArgv(argvL);
 	freeArgv(argvR);
 	delete [] symbolRedirect;
