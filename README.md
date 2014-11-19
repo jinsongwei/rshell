@@ -31,12 +31,25 @@ tests
 /src:
 
 rshell.cpp
+
+ls.cpp
+
+cp.cpp
+
+Timer.h
+
+Timer.h.gch
+
 ```
 
 ```
 /tests:
 
 exec.script
+
+ls.script
+
+pipe.script
 ```
 
 bugs:
@@ -48,6 +61,8 @@ bugs:
 3: cd command doesn't work.
 
 4: the maximun command strings can only contain 100. It is not unlimit.'	5: if the commands doesn't exist then return notice, but if there is unformatted symbols or spaces in the first position, then return "wrong format"
+
+5: when using 2>> and 2> must be connect to each other, can not run such as 2 >> or 2 >, must have no space.
 
 ls.cpp
 ---
