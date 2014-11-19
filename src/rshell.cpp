@@ -100,22 +100,28 @@ void help()
 
 char * inputCommand()
 {
-	char *htname = new char[64];
-	if(gethostname(htname,64) == -1)
+	char *htname = new char[128];
+	char *usrname = new char[128];
+	memset(htname,'\0',128);
+	memset(usrname,'\0',128);
+	if(gethostname(htname,128) == -1)
 	{
 		perror("gethostname");
 	}
+	if((getlogin_r(usrname,128)) == -1)
+		perror("getlogin");
+	
 	char *temp = new char[100];
 	memset(temp, '\0', 100);
 	char c;
-	cout << "[rShell_"<< getlogin() <<"/"<< htname << "] $";
+	cout << "[rShell_"<< usrname <<"/"<< htname << "] $";
 	while(c != EOF)
 	{
 		c = getchar();
 		if(c == '\n')
 		{
 	        	if(temp[0] == '\0')
- 				cout << "[rShell_"<< getlogin() << "/"<< htname <<"] $";
+ 				cout << "[rShell_"<< usrname << "/"<< htname <<"] $";
 			else
 			{
                                 strncat(temp, "\0", 1);
@@ -182,7 +188,7 @@ char * orgSymbol(char *temp)
 		{
 			if( temp[i+1] != '\0' && temp[i+1] == '>')
 			{
-				if(temp[i+2] == '>')
+				if(temp[i+2] != '\0' && temp[i+2] == '>')
 				{
 					strncat(newString, " 2> ",4);
 					i += 2;
@@ -239,6 +245,7 @@ void parsingArgv(char * temp, char ** argvTemp)
 	while(tok != NULL && (strcmp(tok, "#") != 0))
 	{
 		argvTemp[index] = new char[strlen(tok) + 1];
+		memset(argvTemp[index], '\0',strlen(argvTemp[index]));
 		strcpy(argvTemp[index], tok);
 		strncat(argvTemp[index], "\0", 1);
 		index++;
@@ -280,6 +287,7 @@ void executeCmd(char **argv)
 					while(argv[tempIndex] != NULL)
 					{
 						leftArgv[index] = new char[strlen(argv[tempIndex])+ 1];
+						memset(leftArgv[index],'\0',strlen(leftArgv[index]));
 						strcpy(leftArgv[index], argv[tempIndex]);
 						strncat(leftArgv[index],"\0", 1);
 						index++;
@@ -295,6 +303,7 @@ void executeCmd(char **argv)
 					break;
 			}
 			subArgv[j] = new char[strlen(argv[i]) + 1];
+			memset(subArgv[j],'\0',strlen(subArgv[j]));
 			strcpy(subArgv[j], argv[i]);
 			strncat(subArgv[j], "\0", 1);
 			j++;
