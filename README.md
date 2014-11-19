@@ -38,8 +38,6 @@ cp.cpp
 
 Timer.h
 
-Timer.h.gch
-
 ```
 
 ```
