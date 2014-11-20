@@ -407,7 +407,6 @@ void pipeCall(char **argv)
 {
 	char *argvL[50];
 	char *argvR[50];
-	int i = 0;
 	char *symbolRedirect = new char[10];
 	memset(symbolRedirect,'\0',10);
 	
