@@ -84,7 +84,7 @@ int main()
  
 void help()
 {
-		char * cmdString = new char[100];
+		char * cmdString;
 	        char * argvNew[50];
 		cmdString = inputCommand();
 		cmdString = orgSymbol(cmdString);
@@ -92,8 +92,6 @@ void help()
 	       	parsingArgv(cmdString, argvNew);
 		executeCmd(argvNew);
 
-		delete [] cmdString;
-		cmdString = NULL;
 		freeArgv(argvNew);
 		help();	
 }
@@ -131,6 +129,12 @@ char * inputCommand()
 		else
 		strncat(temp, &c, 1);
 	}
+	
+	delete [] htname;
+	htname = NULL;
+	delete [] usrname;
+	usrname = NULL;
+
 		return temp;
 }
 
@@ -252,6 +256,10 @@ void parsingArgv(char * temp, char ** argvTemp)
 		tok = strtok(NULL, " ");
 	}
 	argvTemp[index] = NULL;
+	delete [] temp;
+	temp = NULL;
+	delete [] tok;
+	tok = NULL;
 }
 
 void executeCmd(char **argv)
@@ -329,10 +337,14 @@ int execvpCall(char ** argv)
 		if(argv[0] == NULL)
 		{
 			cerr << "wrong format of command "<< endl;
+			freeArgv(argv);
 			help();
 		}
 		if(strcmp(argv[0], "exit") == 0)
+		{
+			freeArgv(argv);
 			exit(0);
+		}
 		int pid = fork();
 		if(pid == 0){
 			if(execvp(argv[0], argv) == -1)
@@ -344,7 +356,8 @@ int execvpCall(char ** argv)
 		else if(pid == -1)
 		{
 			perror("fork");
-			exit(1);
+			freeArgv(argv);
+			help();
 		}
 		else
 		{
@@ -684,7 +697,9 @@ void pipeHelp4(char ** argvL, char ** argvR)
 	if(pid == -1)
 	{
 	   perror("There was an error with fork(). ");
-	   exit(1);
+	   freeArgv(argvL);
+	   freeArgv(argvR);
+	   help();
 	}
 	
 //child:::
@@ -783,7 +798,9 @@ void pipeHelp5(char ** argvL, char ** argvR)
 	if(pid == -1)
 	{
 	   perror("There was an error with fork(). ");
-	   exit(1);
+	   freeArgv(argvL);
+	   freeArgv(argvR);
+	   help();  
 	}
 //child:::
 	else if(pid == 0)
@@ -798,7 +815,10 @@ void pipeHelp5(char ** argvL, char ** argvR)
 			pipeCall(argvL);
 		}
 		else if(-1 == execvp(argvL[0], argvL)) 
+		{
 			perror("There was an error in execvp. ");
+			exit(1);
+		}
 	   exit(0);  
 	}
 //parent:::
