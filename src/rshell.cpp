@@ -383,7 +383,7 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 				//copy redirect symbol right side.
 				argvR[index] = new char[strlen(argv[i])];
 				memset(argvR[index],'\0',strlen(argvR[index]));
-				strncpy(argvR[index],argv[i],strlen(argv[i]));
+				strcpy(argvR[index],argv[i]);
 				index++;
 				i++;
 			}
@@ -397,7 +397,7 @@ void pipeSeperate(char **argv, char **argvL, char **argvR, char *symbol)
 	{
 		argvL[i] = new char[strlen(argv[i])];
 		memset(argvL[i],'\0',strlen(argvL[i]));
-		strncpy(argvL[i],argv[i], strlen(argv[i]));
+		strcpy(argvL[i],argv[i]);
 		i++;
 	}
 	argvL[i] = NULL;
@@ -407,6 +407,7 @@ void pipeCall(char **argv)
 {
 	char *argvL[50];
 	char *argvR[50];
+	int i = 0;
 	char *symbolRedirect = new char[10];
 	memset(symbolRedirect,'\0',10);
 	
@@ -418,6 +419,7 @@ void pipeCall(char **argv)
 	testArgv(argvR);
 	testString(symbolRedirect);
 */
+
 
 	if(strcmp(symbolRedirect,"|") == 0)
 		pipeHelp1(argvL,argvR);
