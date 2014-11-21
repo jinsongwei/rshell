@@ -58,9 +58,13 @@ bugs:
 
 3: cd command doesn't work.
 
-4: the maximun command strings can only contain 100. It is not unlimit.'	5: if the commands doesn't exist then return notice, but if there is unformatted symbols or spaces in the first position, then return "wrong format"
+4: the maximun command strings can only contain 100. It is not unlimit.'	if the commands doesn't exist then return notice, but if there is unformatted symbols or spaces in the first position, then return "wrong format"
 
 5: when using 2>> and 2> must be connect to each other, can not run such as 2 >> or 2 >, must have no space.
+
+6: cann't place > < | >> <<< or 2> on the first or last argument.
+
+7: in cs100 g++ works weird. So this program did not free three two dimensional pointer array.
 
 ls.cpp
 ---
