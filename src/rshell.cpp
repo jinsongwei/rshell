@@ -534,7 +534,7 @@ void pipeHelp2(char **argvL, char ** argvR)
 	   perror("There was an error with pipe(). ");
 	
 	int pidFile;
-	pidFile = open(argvR[0], O_RDWR);
+	pidFile = open(argvR[0], O_RDWR | O_CREAT | S_IRUSR | S_IWUSR);
 	if(pidFile == -1)	
 		perror("open");
 	int pid = fork();
