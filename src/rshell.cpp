@@ -534,7 +534,7 @@ void pipeHelp2(char **argvL, char ** argvR)
 	   perror("There was an error with pipe(). ");
 	
 	int pidFile;
-	pidFile = open(argvR[0], O_RDWR | O_CREAT | S_IRUSR | S_IWUSR);
+	pidFile = open(argvR[0], O_RDWR | O_CREAT,S_IRWXU);
 	if(pidFile == -1)	
 		perror("open");
 	int pid = fork();
@@ -598,7 +598,7 @@ void pipeHelp3(char ** argvL, char ** argvR)
 	   perror("There was an error with pipe(). ");
 	
 	int pidFile;
-	pidFile = open(argvR[0], O_RDWR);
+	pidFile = open(argvR[0], O_RDWR | O_CREAT, S_IRWXU);
 	if(pidFile == -1)
 		perror("open");
 	int pid = fork();
@@ -769,7 +769,7 @@ void pipeHelp5(char ** argvL, char ** argvR)
 	   perror("There was an error with pipe(). ");
 	
 	int pidFile;
-	pidFile = open(argvR[0], O_RDWR);
+	pidFile = open(argvR[0], O_RDWR | O_CREAT, S_IRWXU);
 	if(pidFile == -1)	
 		perror("open");
 	int pid = fork();
