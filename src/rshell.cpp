@@ -39,7 +39,7 @@ void parsingArgv(char * temp, char ** argvTemp);
 void executeCmd(char ** argv);
 
 //fork a new process call execvp
-int execvpCall(char ** argv);
+int execvCall(char ** argv);
 
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 //start pipe call if there is redirection
@@ -71,6 +71,17 @@ bool isRedirect(char ** argv);
 //check if contain symbols
 bool isSymbol(char **argv);
 
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//PATH value 
+//return NULL if call fail or doesn't have command user input
+//else return the path that the command located.
+char * checkPath(char * cmd);
+
+//using recursive to check command target's path.
+//return NULL if not found
+char * checkInDirs(char * path, char * target);
+
+
 //clean memory
 void freeArgv(char ** temp);
 
@@ -86,7 +97,11 @@ void help()
 {
 		char * cmdString;
 	        char * argvNew[50];
+		char * path;
 		cmdString = inputCommand();
+	
+//		path = checkPath(cmdString);
+//		testString(path);
 		cmdString = orgSymbol(cmdString);
 		cmdString = orgSpaces(cmdString);
 	       	parsingArgv(cmdString, argvNew);
@@ -282,7 +297,7 @@ void executeCmd(char **argv)
 					strcmp(argv[i],"||") == 0)
 			{
 				subArgv[j] = NULL; 
-				wait_pid = execvpCall(subArgv);	
+				wait_pid = execvCall(subArgv);	
 				freeArgv(subArgv);
 				if((strcmp(argv[i],";") == 0 ||
 					strcmp(argv[i], "&&") == 0) && wait_pid != 0)
@@ -324,11 +339,11 @@ void executeCmd(char **argv)
 	}	
 	else{
 		stop = true;
-		execvpCall(argv);
+		execvCall(argv);
 	}
 }
 
-int execvpCall(char ** argv)
+int execvCall(char ** argv)
 {
 	int wait_pid = 0;
 	if(isRedirect(argv))
@@ -341,7 +356,6 @@ int execvpCall(char ** argv)
 		if(argv[0] == NULL)
 		{
 			cerr << "wrong format of command "<< endl;
-			freeArgv(argv);
 			help();
 		}
 		if(strcmp(argv[0], "exit") == 0)
@@ -351,10 +365,20 @@ int execvpCall(char ** argv)
 		}
 		int pid = fork();
 		if(pid == 0){
-			if(execvp(argv[0], argv) == -1)
-			{
-				perror(argv[0]);
+			char * cmdPath = checkPath(argv[0]);
+			if(cmdPath == NULL){
+				cerr << "there is no such command" << endl;
 				exit(1);
+			}
+			else{ 
+				strcat(cmdPath,argv[0]); 
+				strncat(cmdPath,"\0",1);
+				//const char * cmd = cmdPath;	
+				if(execv(cmdPath, argv) == -1)
+				{
+					perror(argv[0]);
+					exit(1);
+				}
 			}
 		}		
 		else if(pid == -1)
@@ -479,11 +503,24 @@ void pipeHelp1(char ** argvL, char ** argvR)
 	   {
 		pipeCall(argvL);
 	   }
-	   else if(-1 == execvp(argvL[0], argvL)) {
-	      perror("There was an error in execvp. ");
-		exit(1);
+	   else
+	   {
+		char * cmdPath = checkPath(argvL[0]);
+		if(cmdPath == NULL){
+			cerr << "there is no such command" << endl;
+			exit(1);
+		}
+		else{ 
+			strcat(cmdPath,argvL[0]); 
+			strncat(cmdPath,"\0",1);
+			//const char * cmd = cmdPath;	
+			if(execv(cmdPath, argvL) == -1)
+			{
+				perror(argvL[0]);
+				exit(1);
+			}
+	   	    }
 	   }
-
 	   exit(0);  
 	}
 //parent:::
@@ -504,11 +541,23 @@ void pipeHelp1(char ** argvL, char ** argvR)
 		int fpid = fork();
 		if(fpid == 0)
 		{
-			if(execvp(argvR[0], argvR) == -1)
-			{	
-				perror("execvp inside doesn't work properly");
+			
+			char * cmdPath = checkPath(argvR[0]);
+			testString(cmdPath);
+			if(cmdPath == NULL){
+				cerr << "there is no such command" << endl;
 				exit(1);
 			}
+			else{ 
+				strcat(cmdPath,argvR[0]); 
+				strncat(cmdPath,"\0",1);
+				//const char * cmd = cmdPath;	
+				if(execv(cmdPath, argvR) == -1)
+				{
+					perror(argvR[0]);
+					exit(1);
+				}
+	   		}
 			exit(0);
 		}
 		else if(fpid == -1)
@@ -861,6 +910,136 @@ bool isSymbol(char **argv)
 	}
 	return false;
 }
+
+
+char * checkPath(char * cmd)
+{
+	char * workingDir= get_current_dir_name();
+	char * cmdPath;
+	if(workingDir == NULL)
+	{
+		perror("getcwd");
+	}
+	
+	if(-1 == chdir("/"))
+	{
+		perror("chdir");
+	}
+	
+	char * getCurrentDir = get_current_dir_name();
+	if(getCurrentDir == NULL)
+		perror("get_current_dir_name");
+	//begin check from the root directory
+	cmdPath = checkInDirs(getCurrentDir, cmd);
+	//go back the previous working directory
+	if(-1 == chdir(workingDir))
+	{
+		perror("chdir");
+	}
+	return cmdPath;
+
+}
+
+int checkInDirs(char * path, char * target)
+{
+	DIR *dirp = opendir(path);
+	int arg = 0;
+	if(dirp == NULL)
+	{
+		perror("opendir");
+	}
+	dirent *direntp;
+	while((direntp = readdir(dirp))){
+		if(strcmp(direntp->d_name,target) == 0)
+		{		
+			if(-1 == closedir(dirp))
+			{
+				perror("closedir");
+			}	
+			arg = 1;
+		}	
+		else if
+		{
+			if(strcmp(direntp->d_name,"bin") == 0)
+			{
+				if(-1 == closedir(dirp))
+				{
+					perror("closedir");
+					return -1;
+				}
+				strcat(path, "bin/");
+				strncat(path,"\0",1);
+				arg = checkInDirs(path,target);
+			}
+		}
+		else if
+		{
+			if(strcmp(direntp->d_name,"usr") == 0)
+			{
+				if(-1 == closedir(dirp))
+				{
+					perror("closedir");
+					return -1;
+				}
+				strcat(path, "usr/")
+			}
+		}
+	}
+	if(-1 == closedir(dirp))
+		perror("closedir");
+
+	return 0;
+
+
+
+//	//if there is no target in here then check if has bin directory
+//	DIR *dirpB = opendir(path);
+//	if(dirpB == NULL)
+//		perror("opendir");
+//
+//	dirent *direntpBin;
+//	while((direntpBin = readdir(dirpB)))
+//	{
+//		if(strcmp(direntpBin->d_name,"bin") == 0)
+//		{
+//			if(-1 == closedir(dirpB))
+//			{
+//				perror("closedir");
+//			}
+//			strcat(path, "bin");
+//			return checkInDirs(path, target);
+//			break;
+//		}
+//	}
+//	if(-1 == closedir(dirpB))
+//		perror("closedir");
+//	//if there is no target in here then check if has usr directory
+//	DIR *dirpU = opendir(path);
+//	if(dirpU == NULL)
+//		perror("opendir");
+//
+//	dirent *direntpUsr;
+//	while((direntpUsr = readdir(dirpU)))
+//	{
+//		if(strcmp(direntpUsr->d_name,"usr") == 0)
+//		{
+//			if(-1 == closedir(dirpU))
+//			{
+//				perror("closedir");
+//			}
+//			strcat(path, "usr");
+//			if(found)
+//			return checkInDirs(path, target);
+//			break;	
+//		}
+//	}
+//
+//	if(-1 == closedir(dirpU))
+//	{
+//		perror("closedir");
+//	}
+	
+}
 	
 void freeArgv(char ** temp)
 {
@@ -878,6 +1057,11 @@ void freeArgv(char ** temp)
 //this is testing funciton nothing contribute to main program
 void testString(char * test)
 {
+	if(test == NULL)
+	{
+		cerr << "nothing in here " << endl;
+		return;
+	}
 	cout << "string length = " << strlen(test) << endl;
 	cout << "string = " << test << endl;
 }
