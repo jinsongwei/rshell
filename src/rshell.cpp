@@ -76,12 +76,9 @@ bool isSymbol(char **argv);
 //return NULL if call fail or doesn't have command user input
 //else return the path that the command located.
 char * checkPath(char * cmd);
-
-//using recursive to check command target's path.
-//return NULL if not found
-char * checkInDirs(char * path, char * target);
-
-
+int checkInDirs(char * path, char * target);
+int checkIfBin(char *path, char * target);
+int checkTarget(char *path, char * target);
 //clean memory
 void freeArgv(char ** temp);
 
@@ -543,7 +540,6 @@ void pipeHelp1(char ** argvL, char ** argvR)
 		{
 			
 			char * cmdPath = checkPath(argvR[0]);
-			testString(cmdPath);
 			if(cmdPath == NULL){
 				cerr << "there is no such command" << endl;
 				exit(1);
@@ -915,7 +911,10 @@ bool isSymbol(char **argv)
 char * checkPath(char * cmd)
 {
 	char * workingDir= get_current_dir_name();
-	char * cmdPath;
+	char * cmdPath = new char[100];
+	memset(cmdPath, '\0',100);
+	strncat(cmdPath,"/",1);
+	int i = 0;
 	if(workingDir == NULL)
 	{
 		perror("getcwd");
@@ -926,119 +925,123 @@ char * checkPath(char * cmd)
 		perror("chdir");
 	}
 	
-	char * getCurrentDir = get_current_dir_name();
-	if(getCurrentDir == NULL)
-		perror("get_current_dir_name");
 	//begin check from the root directory
-	cmdPath = checkInDirs(getCurrentDir, cmd);
+	i = checkInDirs(cmdPath, cmd);
 	//go back the previous working directory
 	if(-1 == chdir(workingDir))
 	{
 		perror("chdir");
 	}
+	if(i == 0)	
+		return NULL;
 	return cmdPath;
 
 }
 
 int checkInDirs(char * path, char * target)
 {
-	DIR *dirp = opendir(path);
 	int arg = 0;
-	if(dirp == NULL)
-	{
+	//if there is no target in here then check if has bin directory
+	DIR *dirpB = opendir(path);
+	if(dirpB == NULL)
 		perror("opendir");
+
+	dirent *direntpBin;
+	while((direntpBin = readdir(dirpB)))
+	{
+		if(strcmp(direntpBin->d_name,"bin") == 0)
+		{
+			strcat(path, "bin/");
+			arg = checkTarget(path, target);
+			break;
+		}
 	}
+	if(arg == 1)
+		return 1;
+	else
+	{
+		memset(path, '\0', strlen(path));
+		strcpy(path, "/");
+		strncat(path,"\0",1);
+	}
+	if(-1 == closedir(dirpB))
+		perror("closedir");
+	//if there is no target in here then check if has usr directory
+	DIR *dirpU = opendir(path);
+	if(dirpU == NULL)
+		perror("opendir");
+
+	dirent *direntpUsr;
+	while((direntpUsr = readdir(dirpU)))
+	{
+		if(strcmp(direntpUsr->d_name,"usr") == 0)
+		{
+			strcat(path, "usr/");
+			arg = checkIfBin(path, target);
+			break;	
+		}
+	}
+
+	if(-1 == closedir(dirpU))
+	{
+		perror("closedir");
+		return -1;
+	}
+	if(arg == 1)
+		return 1;
+	else
+		return 0;
+	
+}
+	
+int checkTarget(char *path, char *target)
+{
+	DIR *dirp = opendir(path);
+	if(dirp == NULL)
+		perror("opendir");
+
 	dirent *direntp;
-	while((direntp = readdir(dirp))){
+	while((direntp = readdir(dirp)))
+	{
 		if(strcmp(direntp->d_name,target) == 0)
-		{		
+		{
 			if(-1 == closedir(dirp))
 			{
 				perror("closedir");
-			}	
-			arg = 1;
-		}	
-		else if
-		{
-			if(strcmp(direntp->d_name,"bin") == 0)
-			{
-				if(-1 == closedir(dirp))
-				{
-					perror("closedir");
-					return -1;
-				}
-				strcat(path, "bin/");
-				strncat(path,"\0",1);
-				arg = checkInDirs(path,target);
 			}
+			return 1;
 		}
-		else if
+	}
+
+	if(-1 == closedir(dirp))
+	{
+		perror("closedir");
+	}
+	return 0;
+}
+
+int checkIfBin(char *path, char * target)
+{
+	int arg = 0;
+	DIR *dirp = opendir(path);
+	if(dirp == NULL)
+		perror("opendir");
+
+	dirent *direntp;
+	while((direntp = readdir(dirp)))
+	{
+		if(strcmp(direntp->d_name,"bin") == 0)
 		{
-			if(strcmp(direntp->d_name,"usr") == 0)
-			{
-				if(-1 == closedir(dirp))
-				{
-					perror("closedir");
-					return -1;
-				}
-				strcat(path, "usr/")
-			}
+			strcat(path, "bin/");
+			arg = checkTarget(path, target);
+			break;
 		}
 	}
 	if(-1 == closedir(dirp))
+	{
 		perror("closedir");
-
-	return 0;
-
-
-
-//	//if there is no target in here then check if has bin directory
-//	DIR *dirpB = opendir(path);
-//	if(dirpB == NULL)
-//		perror("opendir");
-//
-//	dirent *direntpBin;
-//	while((direntpBin = readdir(dirpB)))
-//	{
-//		if(strcmp(direntpBin->d_name,"bin") == 0)
-//		{
-//			if(-1 == closedir(dirpB))
-//			{
-//				perror("closedir");
-//			}
-//			strcat(path, "bin");
-//			return checkInDirs(path, target);
-//			break;
-//		}
-//	}
-//	if(-1 == closedir(dirpB))
-//		perror("closedir");
-//	//if there is no target in here then check if has usr directory
-//	DIR *dirpU = opendir(path);
-//	if(dirpU == NULL)
-//		perror("opendir");
-//
-//	dirent *direntpUsr;
-//	while((direntpUsr = readdir(dirpU)))
-//	{
-//		if(strcmp(direntpUsr->d_name,"usr") == 0)
-//		{
-//			if(-1 == closedir(dirpU))
-//			{
-//				perror("closedir");
-//			}
-//			strcat(path, "usr");
-//			if(found)
-//			return checkInDirs(path, target);
-//			break;	
-//		}
-//	}
-//
-//	if(-1 == closedir(dirpU))
-//	{
-//		perror("closedir");
-//	}
-	
+	}
+	return arg;
 }
 	
 void freeArgv(char ** temp)
