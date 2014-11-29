@@ -38,7 +38,7 @@ void parsingArgv(char * temp, char ** argvTemp);
 //execute commands
 void executeCmd(char ** argv);
 
-//fork a new process call execvp
+//fork a new process call execv
 int execvCall(char ** argv);
 
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -514,6 +514,8 @@ void pipeHelp1(char ** argvL, char ** argvR)
 			if(execv(cmdPath, argvL) == -1)
 			{
 				perror(argvL[0]);
+				delete [] cmdPath;
+				cmdPath = NULL;
 				exit(1);
 			}
 	   	    }
@@ -551,6 +553,8 @@ void pipeHelp1(char ** argvL, char ** argvR)
 				if(execv(cmdPath, argvR) == -1)
 				{
 					perror(argvR[0]);
+					delete [] cmdPath;
+					cmdPath = NULL;
 					exit(1);
 				}
 	   		}
@@ -600,9 +604,25 @@ void pipeHelp2(char **argvL, char ** argvR)
 		{
 			pipeCall(argvL);
 		}
-		else if(-1 == execvp(argvL[0], argvL)) {
-			perror("There was an error in execvp. ");
-			exit(1);
+		else
+		{
+			char *cmdPath;
+			cmdPath = checkPath(argvL[0]);
+			if(cmdPath == NULL)
+			{
+				cerr << argvL[0] << " command does not exsit" << endl;
+				exit(1);
+			}
+			else{
+				strcat(cmdPath, argvL[0]);
+				strncat(cmdPath, "\0", 1);
+				if(-1 == execv(cmdPath, argvL)) {
+					perror("There was an error in execv. ");
+					delete [] cmdPath;
+					cmdPath = NULL;
+					exit(1);
+				}	
+			}
 		}
 	   exit(0);  
 	}
@@ -691,10 +711,22 @@ void pipeHelp3(char ** argvL, char ** argvR)
 		int fpid = fork();
 		if(fpid == 0)
 		{
-			if(execvp(argvL[0], argvL) == -1)
-			{	
-				perror("execvp inside doesn't work properly");
+			char * cmdPath = checkPath(argvL[0]);
+			if(cmdPath == NULL)
+			{
+				cerr << argvL[0] <<" command doesn't exist" << endl;
 				exit(1);
+			}
+			else{
+				strcat(cmdPath, argvL[0]);
+				strncat(cmdPath,"\0",1);
+				if(execv(cmdPath, argvL) == -1)
+				{	
+					perror("execv inside doesn't work properly");
+					delete [] cmdPath;
+					cmdPath = NULL;
+					exit(1);
+				}
 			}
 			exit(0);
 		}
@@ -783,10 +815,25 @@ void pipeHelp4(char ** argvL, char ** argvR)
 		int fpid = fork();
 		if(fpid == 0)
 		{
-			if(execvp(argvL[0], argvL) == -1)
-			{	
-				perror("execvp inside doesn't work properly");
+			char * cmdPath = checkPath(argvL[0]);
+			if(cmdPath == NULL)
+			{
+				cerr << argvL[0] << " command does not exist"<< endl;
 				exit(1);
+			}
+			else
+			{
+				strcat(cmdPath, argvL[0]);
+				strncat(cmdPath, "\0",1);
+				if(execv(cmdPath, argvL) == -1)
+				{	
+					delete [] cmdPath;
+					cmdPath = NULL;
+					perror("execv inside doesn't work properly");
+					exit(1);
+				}
+				delete [] cmdPath;
+				cmdPath = NULL;
 			}
 			exit(0);
 		}
@@ -834,10 +881,28 @@ void pipeHelp5(char ** argvL, char ** argvR)
 		{
 			pipeCall(argvL);
 		}
-		else if(-1 == execvp(argvL[0], argvL)) 
+		else 
 		{
-			perror("There was an error in execvp. ");
-			exit(1);
+			char * cmdPath = checkPath(argvL[0]);
+			if(cmdPath == NULL)
+			{
+				cerr << argvL[0] << " command does not exist"<< endl;
+				exit(1);
+			}
+			else
+			{
+				strcat(cmdPath, argvL[0]);
+				strncat(cmdPath, "\0",1);
+				if(execv(cmdPath, argvL) == -1)
+				{	
+					delete [] cmdPath;
+					cmdPath = NULL;
+					perror("execv inside doesn't work properly");
+					exit(1);
+				}
+				delete [] cmdPath;
+				cmdPath = NULL;
+			}
 		}
 	   exit(0);  
 	}
