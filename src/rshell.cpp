@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <dirent.h>
-
+#include <pwd.h>
 using namespace std;
 
 static bool stop = false;
@@ -79,6 +79,9 @@ char * checkPath(char * cmd);
 int checkInDirs(char * path, char * target);
 int checkIfBin(char *path, char * target);
 int checkTarget(char *path, char * target);
+
+//add cd command
+int callCd(char ** argv);
 //clean memory
 void freeArgv(char ** temp);
 
@@ -350,49 +353,55 @@ int execvCall(char ** argv)
 	}
 	else
 	{
-		if(argv[0] == NULL)
+		if(strcmp(argv[0],"cd") == 0)
 		{
-			cerr << "wrong format of command "<< endl;
-			help();
-		}
-		if(strcmp(argv[0], "exit") == 0)
-		{
-			freeArgv(argv);
-			exit(0);
-		}
-		int pid = fork();
-		if(pid == 0){
-			char * cmdPath = checkPath(argv[0]);
-			if(cmdPath == NULL){
-				cerr << "there is no such command" << endl;
-				exit(1);
+			if(-1 == callCd(argv))
+			{
+				cerr << ("wrong callCd") << endl;
+				return -1;
 			}
-			else{ 
-				strcat(cmdPath,argv[0]); 
-				strncat(cmdPath,"\0",1);
-				//const char * cmd = cmdPath;	
-				if(execv(cmdPath, argv) == -1)
-				{
-					perror(argv[0]);
-					exit(1);
-				}
-			}
-		}		
-		else if(pid == -1)
-		{
-			perror("fork");
-			freeArgv(argv);
-			help();
 		}
 		else
 		{
-			if(waitpid(pid,&wait_pid,0) == -1)
+			if(strcmp(argv[0], "exit") == 0)
 			{
-				perror("wait");	
-				exit(1);
+				freeArgv(argv);
+				exit(0);
 			}
+			int pid = fork();
+			if(pid == 0){
+				char * cmdPath = checkPath(argv[0]);
+				if(cmdPath == NULL){
+					cerr << "there is no such command" << endl;
+					exit(1);
+				}
+				else{ 
+					strcat(cmdPath,argv[0]); 
+					strncat(cmdPath,"\0",1);
+					//const char * cmd = cmdPath;	
+					if(execv(cmdPath, argv) == -1)
+					{
+						perror(argv[0]);
+						exit(1);
+					}
+				}
+			}		
+			else if(pid == -1)
+			{
+				perror("fork");
+				freeArgv(argv);
+				help();
+			}
+			else
+			{
+				if(waitpid(pid,&wait_pid,0) == -1)
+				{
+					perror("wait");	
+					exit(1);
+				}
+			}
+			return wait_pid;
 		}
-		return wait_pid;
 	}
 }
 
@@ -1109,6 +1118,37 @@ int checkIfBin(char *path, char * target)
 	return arg;
 }
 	
+
+int callCd(char ** argv)
+{
+	if(argv[1] == NULL)
+	{
+		struct passwd *pw = getpwuid(getuid());
+		if(-1 == chdir(pw->pw_dir))
+		{
+			perror("chdir");
+			return -1;
+		}
+	}
+	else 
+	{
+		char *current = get_current_dir_name();
+		if(current == NULL)
+		{
+			perror("get_current_dir_name");
+			return -1;
+		}
+		strncat(current, "/",1);
+		strcat(current,argv[1]);
+		strncat(current, "\0",1);
+		if(-1 == chdir(current))
+		{
+			perror("chdir");
+			return -1;
+		}
+	}
+}
+
 void freeArgv(char ** temp)
 {
 	int i = 0;
