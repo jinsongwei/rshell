@@ -16,7 +16,7 @@
 using namespace std;
 
 static bool stop = false;
-int childPid = -1;
+int childPid = 1;
 //.........................................
 //these two function is for testing
 void testString(char * test);
@@ -95,43 +95,50 @@ void freeArgv(char ** temp);
 
 int main()
 {
-	  signal(SIGINT, handle_signal);
+	  
           help();
           return 0;
 }
  
 void help()
 {
-	while(1)
-	{
-		cout << getpid() << endl;
+	signal(SIGINT, handle_signal);
+
 		int pid = fork();
 		if(pid == 0){
+			
 			childPid = getpid();
-			cout << getpid() << endl;
 			char * cmdString;
 			char * argvNew[50];
-			char * path;
 			cmdString = inputCommand();
 			//path = checkPath(cmdString);
 			//testString(path);
 			cmdString = orgSymbol(cmdString);
 			cmdString = orgSpaces(cmdString);
 			parsingArgv(cmdString, argvNew);
+			if(strcmp(argvNew[0],"exit") == 0)
+			{
+			//	delete [] cmdString;
+			//	cmdString =NULL;
+				freeArgv(argvNew);
+				if(-1 == kill(getppid(),SIGKILL))
+					perror("kill");
+			}
 		
 			executeCmd(argvNew);
 			//	freeArgv(argvNew);
+			exit(0);
 		}
 		else if(pid ==-1)
 		{
 			perror("fork");
 		}
 		else{
-			cout << getpid() << endl;
 			wait(0);
-			cout << getpid() << endl;
+			help();
 		}
-	}
+//		help();
+	
 }
 
 char * inputCommand()
@@ -1174,9 +1181,9 @@ int callCd(char ** argv)
 
 void handle_signal(int sig)
 {
-	int i =  childPid;
-	cout << "in signal " << childPid << endl;
-	if(-1 == kill(i,SIGKILL))
+//	cout << "in signal " << childPid << endl;
+	cout << endl;
+	if(-1 == kill(childPid,SIGKILL) && childPid != 1)
 		perror("kill");
 	
 }
