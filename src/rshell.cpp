@@ -12,9 +12,11 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <pwd.h>
+#include <signal.h>
 using namespace std;
 
 static bool stop = false;
+int childPid = -1;
 //.........................................
 //these two function is for testing
 void testString(char * test);
@@ -82,6 +84,10 @@ int checkTarget(char *path, char * target);
 
 //add cd command
 int callCd(char ** argv);
+
+//signal ^C
+void handle_signal(int sig);
+
 //clean memory
 void freeArgv(char ** temp);
 
@@ -89,26 +95,43 @@ void freeArgv(char ** temp);
 
 int main()
 {
+	  signal(SIGINT, handle_signal);
           help();
           return 0;
 }
  
 void help()
 {
-		char * cmdString;
-	        char * argvNew[50];
-		char * path;
-		cmdString = inputCommand();
-	
-//		path = checkPath(cmdString);
-//		testString(path);
-		cmdString = orgSymbol(cmdString);
-		cmdString = orgSpaces(cmdString);
-	       	parsingArgv(cmdString, argvNew);
-		executeCmd(argvNew);
-
-	//	freeArgv(argvNew);
-		help();	
+	while(1)
+	{
+		cout << getpid() << endl;
+		int pid = fork();
+		if(pid == 0){
+			childPid = getpid();
+			cout << getpid() << endl;
+			char * cmdString;
+			char * argvNew[50];
+			char * path;
+			cmdString = inputCommand();
+			//path = checkPath(cmdString);
+			//testString(path);
+			cmdString = orgSymbol(cmdString);
+			cmdString = orgSpaces(cmdString);
+			parsingArgv(cmdString, argvNew);
+		
+			executeCmd(argvNew);
+			//	freeArgv(argvNew);
+		}
+		else if(pid ==-1)
+		{
+			perror("fork");
+		}
+		else{
+			cout << getpid() << endl;
+			wait(0);
+			cout << getpid() << endl;
+		}
+	}
 }
 
 char * inputCommand()
@@ -390,7 +413,7 @@ int execvCall(char ** argv)
 			{
 				perror("fork");
 				freeArgv(argv);
-				help();
+				exit(1);
 			}
 			else
 			{
@@ -1138,7 +1161,7 @@ int callCd(char ** argv)
 			perror("get_current_dir_name");
 			return -1;
 		}
-		strncat(current, "/",1);
+		strncat(current, "/",1); 
 		strcat(current,argv[1]);
 		strncat(current, "\0",1);
 		if(-1 == chdir(current))
@@ -1147,6 +1170,15 @@ int callCd(char ** argv)
 			return -1;
 		}
 	}
+}
+
+void handle_signal(int sig)
+{
+	int i =  childPid;
+	cout << "in signal " << childPid << endl;
+	if(-1 == kill(i,SIGKILL))
+		perror("kill");
+	
 }
 
 void freeArgv(char ** temp)
