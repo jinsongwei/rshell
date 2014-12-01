@@ -92,7 +92,10 @@ void freeArgv(char ** temp);
 
 
 int main()
-{
+{	
+//	char * temp = "ls";
+//	char * path = checkPath(temp);
+//	cout << path << endl;
           help();
           return 0;
 }
@@ -150,6 +153,7 @@ char * inputCommand()
 	{
 		perror("gethostname");
 	}
+	
 	if((getlogin_r(usrname,128)) == -1)
 		perror("getlogin");
 	
@@ -175,10 +179,10 @@ char * inputCommand()
 		strncat(temp, &c, 1);
 	}
 	
-	delete [] htname;
-	htname = NULL;
-	delete [] usrname;
-	usrname = NULL;
+//	delete [] htname;
+//	htname = NULL;
+//	delete [] usrname;
+//	usrname = NULL;
 
 		return temp;
 }
@@ -551,8 +555,6 @@ void pipeHelp1(char ** argvL, char ** argvR)
 			if(execv(cmdPath, argvL) == -1)
 			{
 				perror(argvL[0]);
-				delete [] cmdPath;
-				cmdPath = NULL;
 				exit(1);
 			}
 	   	    }
@@ -590,8 +592,6 @@ void pipeHelp1(char ** argvL, char ** argvR)
 				if(execv(cmdPath, argvR) == -1)
 				{
 					perror(argvR[0]);
-					delete [] cmdPath;
-					cmdPath = NULL;
 					exit(1);
 				}
 	   		}
@@ -655,8 +655,6 @@ void pipeHelp2(char **argvL, char ** argvR)
 				strncat(cmdPath, "\0", 1);
 				if(-1 == execv(cmdPath, argvL)) {
 					perror("There was an error in execv. ");
-					delete [] cmdPath;
-					cmdPath = NULL;
 					exit(1);
 				}	
 			}
@@ -760,8 +758,6 @@ void pipeHelp3(char ** argvL, char ** argvR)
 				if(execv(cmdPath, argvL) == -1)
 				{	
 					perror("execv inside doesn't work properly");
-					delete [] cmdPath;
-					cmdPath = NULL;
 					exit(1);
 				}
 			}
@@ -864,13 +860,9 @@ void pipeHelp4(char ** argvL, char ** argvR)
 				strncat(cmdPath, "\0",1);
 				if(execv(cmdPath, argvL) == -1)
 				{	
-					delete [] cmdPath;
-					cmdPath = NULL;
 					perror("execv inside doesn't work properly");
 					exit(1);
 				}
-				delete [] cmdPath;
-				cmdPath = NULL;
 			}
 			exit(0);
 		}
@@ -937,8 +929,6 @@ void pipeHelp5(char ** argvL, char ** argvR)
 					perror("execv inside doesn't work properly");
 					exit(1);
 				}
-				delete [] cmdPath;
-				cmdPath = NULL;
 			}
 		}
 	   exit(0);  
@@ -1053,7 +1043,10 @@ int checkTarget(char *path, char *target)
 {
 	DIR *dirp = opendir(path);
 	if(dirp == NULL)
-		perror("opendir");
+	{
+		return 0;
+		perror("some directories cannot open without permmission");
+	}
 
 	dirent *direntp;
 	while((direntp = readdir(dirp)))
@@ -1088,7 +1081,10 @@ int callCd(char ** argv)
 	}
 	else 
 	{
-		char *current = get_current_dir_name();
+		char *current = new char[100];
+		memset(current, '\0', 100);
+		strcpy(current, get_current_dir_name());
+		
 		if(current == NULL)
 		{
 			perror("get_current_dir_name");
@@ -1096,6 +1092,7 @@ int callCd(char ** argv)
 		}
 		strncat(current, "/",1); 
 		strcat(current,argv[1]);
+//		strncat(current,"/",1);
 		strncat(current, "\0",1);
 		if(-1 == chdir(current))
 		{
@@ -1109,9 +1106,11 @@ void handle_signal(int sig)
 {
 //	cout << "in signal " << childPid << endl;
 	cout << endl;
-	if(-1 == kill(childPid,SIGKILL) && childPid != 1)
+	if(childPid != 1)
+	{
+		if(-1 == kill(childPid,SIGKILL))
 		perror("kill");
-	
+	}
 }
 
 void freeArgv(char ** temp)
