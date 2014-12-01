@@ -156,7 +156,8 @@ char * inputCommand()
 	char *temp = new char[100];
 	memset(temp, '\0', 100);
 	char c;
-	cout << "[rShell_"<< usrname <<"/"<< htname << "] $";
+	cout << "[rShell_"<< usrname <<"/"<< htname
+				<<  get_current_dir_name()<<"] $" ;
 	while(c != EOF)
 	{
 		c = getchar();
