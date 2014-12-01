@@ -78,8 +78,6 @@ bool isSymbol(char **argv);
 //return NULL if call fail or doesn't have command user input
 //else return the path that the command located.
 char * checkPath(char * cmd);
-int checkInDirs(char * path, char * target);
-int checkIfBin(char *path, char * target);
 int checkTarget(char *path, char * target);
 
 //add cd command
@@ -95,7 +93,6 @@ void freeArgv(char ** temp);
 
 int main()
 {
-	  
           help();
           return 0;
 }
@@ -107,25 +104,27 @@ void help()
 		int pid = fork();
 		if(pid == 0){
 			
-			childPid = getpid();
-			char * cmdString;
-			char * argvNew[50];
-			cmdString = inputCommand();
-			//path = checkPath(cmdString);
-			//testString(path);
-			cmdString = orgSymbol(cmdString);
-			cmdString = orgSpaces(cmdString);
-			parsingArgv(cmdString, argvNew);
-			if(strcmp(argvNew[0],"exit") == 0)
-			{
-			//	delete [] cmdString;
-			//	cmdString =NULL;
-				freeArgv(argvNew);
-				if(-1 == kill(getppid(),SIGKILL))
-					perror("kill");
+			while(1){
+				childPid = getpid();
+				char * cmdString;
+				char * argvNew[50];
+				cmdString = inputCommand();
+				//path = checkPath(cmdString);
+				//testString(path);
+				cmdString = orgSymbol(cmdString);
+				cmdString = orgSpaces(cmdString);
+				parsingArgv(cmdString, argvNew);
+				if(strcmp(argvNew[0],"exit") == 0)
+				{
+				//	delete [] cmdString;
+				//	cmdString =NULL;
+					freeArgv(argvNew);
+					if(-1 == kill(getppid(),SIGKILL))
+						perror("kill");
+				}
+			
+				executeCmd(argvNew);
 			}
-		
-			executeCmd(argvNew);
 			//	freeArgv(argvNew);
 			exit(0);
 		}
@@ -304,11 +303,9 @@ void parsingArgv(char * temp, char ** argvTemp)
 		argvTemp[index] = NULL;
 		index++;
 	}
-	
 	delete [] temp;
 	temp = NULL;
-	delete [] tok;
-	tok = NULL;
+	
 }
 
 void executeCmd(char **argv)
@@ -1014,89 +1011,42 @@ bool isSymbol(char **argv)
 
 char * checkPath(char * cmd)
 {
-	char * workingDir= get_current_dir_name();
-	char * cmdPath = new char[100];
-	memset(cmdPath, '\0',100);
-	strncat(cmdPath,"/",1);
+	char * path[50];
+	char * tempPath = getenv("PATH");
+	
+	int index = 0;
+	char *tok;
+	tok = strtok(tempPath, ":");
+	while(tok != NULL)
+	{
+		path[index] = new char[strlen(tok) + 1];
+		memset(path[index], '\0',strlen(path[index]));
+		strcpy(path[index], tok);
+		strncat(path[index], "\0", 1);
+		index++;
+		tok = strtok(NULL, ":");
+	}
+	while(index != 50){
+		path[index] = NULL;
+		index++;
+	}
+	
 	int i = 0;
-	if(workingDir == NULL)
+	while(path[i] != NULL)
 	{
-		perror("getcwd");
-	}
-	
-	if(-1 == chdir("/"))
-	{
-		perror("chdir");
-	}
-	
-	//begin check from the root directory
-	i = checkInDirs(cmdPath, cmd);
-	//go back the previous working directory
-	if(-1 == chdir(workingDir))
-	{
-		perror("chdir");
-	}
-	if(i == 0)	
-		return NULL;
-	return cmdPath;
+		if(checkTarget(path[i], cmd) == 1)
+		{		
+			strncat(path[i],"/",1);
+			strncat(path[i],"\0",1);
+			return path[i];
+		}
+		i++;
+	}	
 
+	return NULL;
 }
 
-int checkInDirs(char * path, char * target)
-{
-	int arg = 0;
-	//if there is no target in here then check if has bin directory
-	DIR *dirpB = opendir(path);
-	if(dirpB == NULL)
-		perror("opendir");
 
-	dirent *direntpBin;
-	while((direntpBin = readdir(dirpB)))
-	{
-		if(strcmp(direntpBin->d_name,"bin") == 0)
-		{
-			strcat(path, "bin/");
-			arg = checkTarget(path, target);
-			break;
-		}
-	}
-	if(arg == 1)
-		return 1;
-	else
-	{
-		memset(path, '\0', strlen(path));
-		strcpy(path, "/");
-		strncat(path,"\0",1);
-	}
-	if(-1 == closedir(dirpB))
-		perror("closedir");
-	//if there is no target in here then check if has usr directory
-	DIR *dirpU = opendir(path);
-	if(dirpU == NULL)
-		perror("opendir");
-
-	dirent *direntpUsr;
-	while((direntpUsr = readdir(dirpU)))
-	{
-		if(strcmp(direntpUsr->d_name,"usr") == 0)
-		{
-			strcat(path, "usr/");
-			arg = checkIfBin(path, target);
-			break;	
-		}
-	}
-
-	if(-1 == closedir(dirpU))
-	{
-		perror("closedir");
-		return -1;
-	}
-	if(arg == 1)
-		return 1;
-	else
-		return 0;
-	
-}
 	
 int checkTarget(char *path, char *target)
 {
@@ -1123,31 +1073,6 @@ int checkTarget(char *path, char *target)
 	}
 	return 0;
 }
-
-int checkIfBin(char *path, char * target)
-{
-	int arg = 0;
-	DIR *dirp = opendir(path);
-	if(dirp == NULL)
-		perror("opendir");
-
-	dirent *direntp;
-	while((direntp = readdir(dirp)))
-	{
-		if(strcmp(direntp->d_name,"bin") == 0)
-		{
-			strcat(path, "bin/");
-			arg = checkTarget(path, target);
-			break;
-		}
-	}
-	if(-1 == closedir(dirp))
-	{
-		perror("closedir");
-	}
-	return arg;
-}
-	
 
 int callCd(char ** argv)
 {
