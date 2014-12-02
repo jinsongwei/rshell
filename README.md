@@ -66,6 +66,9 @@ bugs:
 
 7: in cs100 g++ works weird. So this program did not free three two dimensional pointer array.
 
+8: when you using ^C to exit the current program, the current path will change to initial path where the rshell started. 
+
+9: everytime using C-c or exit the program. the shell will prompt "killed" means the current process was terminated.
 
 ls.cpp
 ---

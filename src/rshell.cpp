@@ -90,13 +90,12 @@ void handle_signal(int sig);
 void freeArgv(char ** temp);
 
 
-
 int main()
 {	
-//	char * temp = "ls";
+//	char * temp = "bg";
 //	char * path = checkPath(temp);
 //	cout << path << endl;
-          help();
+        help();
           return 0;
 }
  
@@ -434,6 +433,7 @@ int execvCall(char ** argv)
 			}
 			return wait_pid;
 		}
+		return wait_pid;
 	}
 }
 
@@ -1078,6 +1078,7 @@ int callCd(char ** argv)
 			perror("chdir");
 			return -1;
 		}
+		return 1;
 	}
 	else 
 	{
@@ -1099,6 +1100,7 @@ int callCd(char ** argv)
 			perror("chdir");
 			return -1;
 		}
+		return 1;
 	}
 }
 
