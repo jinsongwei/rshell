@@ -167,7 +167,8 @@ char * inputCommand()
 		if(c == '\n')
 		{
 	        	if(temp[0] == '\0')
- 				cout << "[rShell_"<< usrname << "/"<< htname <<"] $";
+				cout << "[rShell_"<< usrname <<"/"<< htname
+				<<  get_current_dir_name()<<"] $" ;
 			else
 			{
                                 strncat(temp, "\0", 1);
@@ -388,7 +389,7 @@ int execvCall(char ** argv)
 		{
 			if(-1 == callCd(argv))
 			{
-				cerr << ("wrong callCd") << endl;
+				cerr << ("wrong call cd") << endl;
 				return -1;
 			}
 		}
