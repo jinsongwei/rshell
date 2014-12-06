@@ -390,7 +390,7 @@ int execvCall(char ** argv)
 		{
 			if(-1 == callCd(argv))
 			{
-				cerr << ("wrong callCd") << endl;
+				cerr << ("wrong call cd") << endl;
 				return -1;
 			}
 		}
@@ -404,6 +404,7 @@ int execvCall(char ** argv)
 			int pid = fork();
 			if(pid == 0){
 				char * cmdPath = checkPath(argv[0]);
+				
 				if(cmdPath == NULL){
 					cerr << "there is no such command" << endl;
 					exit(1);
@@ -411,7 +412,9 @@ int execvCall(char ** argv)
 				else{ 
 					strcat(cmdPath,argv[0]); 
 					strncat(cmdPath,"\0",1);
-					//const char * cmd = cmdPath;	
+					memset(argv[0],'\0',strlen(argv[0]));
+					strcpy(argv[0],cmdPath);
+					strncat(argv[0],"\0",1);
 					if(execv(cmdPath, argv) == -1)
 					{
 						perror(argv[0]);

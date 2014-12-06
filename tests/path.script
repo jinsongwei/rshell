@@ -1,0 +1,35 @@
+Script started on Mon 01 Dec 2014 10:09:39 PM PST
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshell/testsjinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell/tests$ cd ..
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ make
+g++ -Wall -Werror -ansi -pedantic ./src/rshell.cpp -o ./bin/rshell 
+g++ -Wall -Werror -ansi -pedantic ./src/ls.cpp -o ./bin/ls 
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ bin/rshell 
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop/rshell] $cat
+^C
+
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop/rshell] $^C
+
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop/rshell] $cd
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei] $cd Desktop
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop] $cd rshell
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop/rshell] $ls
+bin  LICENSE  Makefile	README.md  src	tests
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop/rshell] $pwd
+/home/jinsongwei/Desktop/rshell
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop/rshell] $cd  sl
+there is no such command
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop/rshell] $
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei/Desktop/rshell] $cd
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei] $cd ..
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home] $cd ..
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/] $ls
+bin   cdrom  etc   initrd.img	   lib	  lost+found  mnt  proc  run   srv  tmp  var	  vmlinuz.old
+boot  dev    home  initrd.img.old  lib64  media       opt  root  sbin  sys  usr  vmlinuz
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/] $cd
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei] $cd .
+[rShell_/jinsongwei-Lenovo-IdeaPad-Yoga-13/home/jinsongwei] $exit
+Killed
+]0;jinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13: ~/Desktop/rshelljinsongwei@jinsongwei-Lenovo-IdeaPad-Yoga-13:~/Desktop/rshell$ exit
+exit
+
+Script done on Mon 01 Dec 2014 10:11:34 PM PST
