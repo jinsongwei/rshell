@@ -118,16 +118,14 @@ void help()
 				parsingArgv(cmdString, argvNew);
 				if(strcmp(argvNew[0],"exit") == 0)
 				{
-				//	delete [] cmdString;
-				//	cmdString =NULL;
 					freeArgv(argvNew);
 					if(-1 == kill(getppid(),SIGKILL))
 						perror("kill");
 				}
 			
 				executeCmd(argvNew);
+				freeArgv(argvNew);
 			}
-			//	freeArgv(argvNew);
 			exit(0);
 		}
 		else if(pid ==-1)
@@ -158,16 +156,20 @@ char * inputCommand()
 	
 	char *temp = new char[100];
 	memset(temp, '\0', 100);
+	char *getDir = get_current_dir_name();
+	if(getDir == NULL)
+		perror("get_current_dir_name");
 	char c;
 	cout << "[rShell_"<< usrname <<"/"<< htname
-				<<  get_current_dir_name()<<"] $" ;
+				<<  getDir <<"] $" ;
 	while(c != EOF)
 	{
 		c = getchar();
 		if(c == '\n')
 		{
 	        	if(temp[0] == '\0')
- 				cout << "[rShell_"<< usrname << "/"<< htname <<"] $";
+ 				cout << "[rShell_"<< usrname << "/"<< htname 
+					<< getDir << "] $";
 			else
 			{
                                 strncat(temp, "\0", 1);
@@ -178,10 +180,10 @@ char * inputCommand()
 		strncat(temp, &c, 1);
 	}
 	
-//	delete [] htname;
-//	htname = NULL;
-//	delete [] usrname;
-//	usrname = NULL;
+	delete [] htname;
+	htname = NULL;
+	delete [] usrname;
+	usrname = NULL;
 
 		return temp;
 }
